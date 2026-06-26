@@ -267,9 +267,7 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}
-
-// ── Trade Modal ───────────────────────────────────────────────────────────────
+}// ── Trade Modal ───────────────────────────────────────────────────────────────
 function TradeModal({crypto,user,onClose,onTrade}){
   const [side,setSide]=useState("buy");
   const [amount,setAmount]=useState("");

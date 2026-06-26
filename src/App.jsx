@@ -96,9 +96,7 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-}
-
-// ── Toast Notifications ───────────────────────────────────────────────────────
+    }// ── Toast Notifications ───────────────────────────────────────────────────────
 function ToastStack({ toasts }) {
   return (
     <div style={{position:"fixed",bottom:80,left:12,right:12,zIndex:200,display:"flex",flexDirection:"column",gap:6,pointerEvents:"none"}}>
@@ -116,7 +114,8 @@ function ToastStack({ toasts }) {
       ))}
     </div>
   );
-  }
+}
+
 // ── Login Page ────────────────────────────────────────────────────────────────
 function LoginPage({ onAuth }) {
   const [mode,setMode]=useState("login");
@@ -199,21 +198,7 @@ function LoginPage({ onAuth }) {
             <div style={{fontSize:11,color:C.gold,fontFamily:"monospace"}}>{fmtTime(serverTime)}</div>
           </div>
         </div>
-      </div>
-
-      <Ticker cryptos={CRYPTOS}/>
-
-      {/* Hero */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px 100px"}}>
-        {/* Tagline */}
-        <div style={{textAlign:"center",marginBottom:32}}>
-          <div style={{fontSize:11,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Institutional-Grade Crypto Platform</div>
-          <h1 style={{margin:0,fontSize:28,fontWeight:900,lineHeight:1.2,letterSpacing:-.5}}>
-            Grow Your Future<br/>
-            <span style={{background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Through Technology</span>
-          </h1>
-          <p style={{margin:"10px 0 0",color:C.subtext,fontSize:13}}>Trade crypto assets with confidence</p>
-        </div><Ticker cryptos={CRYPTOS}/>
+      </div><Ticker cryptos={CRYPTOS}/>
 
       {/* Hero */}
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px 100px"}}>
@@ -267,7 +252,9 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}// ── Trade Modal ───────────────────────────────────────────────────────────────
+}
+
+// ── Trade Modal ───────────────────────────────────────────────────────────────
 function TradeModal({crypto,user,onClose,onTrade}){
   const [side,setSide]=useState("buy");
   const [amount,setAmount]=useState("");
@@ -310,7 +297,9 @@ function TradeModal({crypto,user,onClose,onTrade}){
               {s.toUpperCase()}
             </button>
           ))}
-        </div><div style={{position:"relative",marginBottom:8}}>
+        </div>
+
+        <div style={{position:"relative",marginBottom:8}}>
           <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted}}>$</span>
           <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"
             style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px 10px 28px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
@@ -327,9 +316,7 @@ function TradeModal({crypto,user,onClose,onTrade}){
               {pct}%
             </button>
           ))}
-        </div>
-
-        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+        </div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:
              holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0"}
@@ -426,7 +413,9 @@ function AdminPanel({user,setUser,onClose}){
       </div>
     </div>
   );
-      }// ── Deposit Modal ─────────────────────────────────────────────────────────────
+}
+
+// ── Deposit Modal ─────────────────────────────────────────────────────────────
 function DepositModal({onClose}){
   const networks=[
     {name:"Bitcoin (BTC)",addr:"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",icon:"₿",color:"#F7931A"},
@@ -467,9 +456,7 @@ function DepositModal({onClose}){
       </div>
     </div>
   );
-}
-
-// ── Main Dashboard ────────────────────────────────────────────────────────────
+      }// ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function App(){
   const [user,setUser]=useState(null);
   const [tab,setTab]=useState("market");
@@ -633,9 +620,7 @@ export default function App(){
                   <div style={{fontSize:9,color:C.muted,marginTop:2}}>{card.sub}</div>
                 </div>
               ))}
-            </div>
-
-            <button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer"}}>
+            </div><button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer"}}>
               + Deposit Funds
             </button>
 
@@ -665,7 +650,9 @@ export default function App(){
               );
             })}
           </div>
-        )}{/* HISTORY */}
+        )}
+
+        {/* HISTORY */}
         {tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Transaction History</div>
@@ -709,8 +696,7 @@ export default function App(){
               </div>
             </div>
 
-            {[
-              {label:"Total Portfolio Value",value:`$${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
+            {[{label:"Total Portfolio Value",value:`$${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
               {label:"Cash Balance",value:`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
               {label:"Positions",value:user.portfolio.length},
               {label:"Total Trades",value:txHistory.length},
@@ -748,4 +734,4 @@ export default function App(){
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
     </div>
   );
-      }
+                                                             }

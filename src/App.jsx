@@ -38,6 +38,42 @@ const COUNTRIES    = ["🇺🇸","🇬🇧","🇳🇬","🇨🇦","🇦🇺","�
 
 const randItem = arr => arr[Math.floor(Math.random() * arr.length)];
 
+// ── Support contact ────────────────────────────────────────────────────────
+const SUPPORT_EMAIL = "cryptoforextraining@gmail.com";
+
+function openSupportEmail(){
+  const subject = "New Inquiry — Automated Financial Marketing";
+  const body =
+`Hello Automated Financial Marketing Team,
+
+Welcome! Thank you for reaching out. To help us assess your account and trading goals properly, please answer the following before a specialist responds:
+
+1) How would you like us to assess you?
+   [ ] Beginner — New to crypto/forex, need full guidance
+   [ ] Intermediate — Some experience, want optimized strategy
+   [ ] Advanced — Experienced trader, want account scaling
+   [ ] Institutional — Managing larger capital / a group
+
+2) What is your primary goal?
+   [ ] Long-term investment growth
+   [ ] Active short-term trading
+   [ ] Passive automated trading
+   [ ] Not sure yet — need a recommendation
+
+3) Estimated starting deposit range:
+   [ ] $100 - $500
+   [ ] $500 - $2,000
+   [ ] $2,000 - $10,000
+   [ ] $10,000+
+
+Please reply with your selections (e.g. "1) Beginner, 2) Passive automated trading, 3) $500-$2,000") and our team will get back to you within 24 hours.
+
+— Automated Financial Marketing Support`;
+
+  const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+}
+
 function makeToast(type) {
   const name   = randItem(FAKE_NAMES);
   const amount = randItem(FAKE_AMOUNTS);
@@ -96,7 +132,9 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-    }// ── Toast Notifications ───────────────────────────────────────────────────────
+}
+
+// ── Toast Notifications ───────────────────────────────────────────────────────
 function ToastStack({ toasts }) {
   return (
     <div style={{position:"fixed",bottom:80,left:12,right:12,zIndex:200,display:"flex",flexDirection:"column",gap:6,pointerEvents:"none"}}>
@@ -198,7 +236,9 @@ function LoginPage({ onAuth }) {
             <div style={{fontSize:11,color:C.gold,fontFamily:"monospace"}}>{fmtTime(serverTime)}</div>
           </div>
         </div>
-      </div><Ticker cryptos={CRYPTOS}/>
+      </div>
+
+      <Ticker cryptos={CRYPTOS}/>
 
       {/* Hero */}
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px 100px"}}>
@@ -248,6 +288,14 @@ function LoginPage({ onAuth }) {
           ))}
         </div>
       </div>
+
+      <button onClick={openSupportEmail} title="Chat with Support"
+        style={{position:"fixed",bottom:24,right:16,width:54,height:54,borderRadius:"50%",
+          background:`linear-gradient(135deg,${C.accent},#0057FF)`,border:"none",cursor:"pointer",
+          display:"flex",alignItems:"center",justifyContent:"center",fontSize:23,
+          boxShadow:"0 6px 20px rgba(0,198,255,.4)",zIndex:150}}>
+        💬
+      </button>
 
       <ToastStack toasts={toasts}/>
     </div>
@@ -316,7 +364,9 @@ function TradeModal({crypto,user,onClose,onTrade}){
               {pct}%
             </button>
           ))}
-        </div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+        </div>
+
+        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:
              holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0"}
@@ -418,9 +468,10 @@ function AdminPanel({user,setUser,onClose}){
 // ── Deposit Modal ─────────────────────────────────────────────────────────────
 function DepositModal({onClose}){
   const networks=[
-    {name:"Bitcoin (BTC)",addr:"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",icon:"₿",color:"#F7931A"},
-    {name:"USDT (TRC20)",addr:"TRx7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6",icon:"₮",color:"#26A17B"},
-    {name:"Ethereum (ETH)",addr:"0x742d35Cc6634C0532925a3b844Bc454e4438f44e",icon:"Ξ",color:"#627EEA"},
+    {name:"Bitcoin (BTC)",addr:"bc1qptzxttxd53jk3xqku3wdmlsfjy73hquerqhhy7",icon:"₿",color:"#F7931A"},
+    {name:"USDT (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"₮",color:"#26A17B"},
+    {name:"Solana (SOL)",addr:"FMn7bivQuYzKWaE5hLXJBbtNbxDez6jswXCsjqFKvk3U",icon:"◎",color:"#9945FF"},
+    {name:"USDC (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"$",color:"#2775CA"},
   ];
   const [copied,setCopied]=useState(null);
   const copy=(addr,name)=>{
@@ -452,11 +503,17 @@ function DepositModal({onClose}){
             </button>
           </div>
         ))}
-        <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:4}}>After sending, contact support with your TX hash</div>
+        <button onClick={openSupportEmail}
+          style={{width:"100%",marginTop:4,padding:"11px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          💬 Notify Support After Sending
+        </button>
+        <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:8}}>After sending, contact support with your TX hash</div>
       </div>
     </div>
   );
-      }// ── Main Dashboard ────────────────────────────────────────────────────────────
+}
+
+// ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function App(){
   const [user,setUser]=useState(null);
   const [tab,setTab]=useState("market");
@@ -541,7 +598,9 @@ export default function App(){
         @keyframes fadeUp{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
         ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#040A15}::-webkit-scrollbar-thumb{background:#1A2D4A;border-radius:2px}
         input:focus{border-color:${C.accent}!important;outline:none}
-      `}</style>{/* Top Bar */}
+      `}</style>
+
+      {/* Top Bar */}
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:30,height:30,borderRadius:7,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:12,color:"#fff"}}>AF</div>
@@ -620,7 +679,9 @@ export default function App(){
                   <div style={{fontSize:9,color:C.muted,marginTop:2}}>{card.sub}</div>
                 </div>
               ))}
-            </div><button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer"}}>
+            </div>
+
+            <button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer"}}>
               + Deposit Funds
             </button>
 
@@ -696,7 +757,8 @@ export default function App(){
               </div>
             </div>
 
-            {[{label:"Total Portfolio Value",value:`$${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
+            {[
+              {label:"Total Portfolio Value",value:`$${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
               {label:"Cash Balance",value:`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
               {label:"Positions",value:user.portfolio.length},
               {label:"Total Trades",value:txHistory.length},
@@ -720,6 +782,15 @@ export default function App(){
         )}
       </div>
 
+      {/* Floating Chat Button */}
+      <button onClick={openSupportEmail} title="Chat with Support"
+        style={{position:"fixed",bottom:78,right:16,width:52,height:52,borderRadius:"50%",
+          background:`linear-gradient(135deg,${C.accent},#0057FF)`,border:"none",cursor:"pointer",
+          display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+          boxShadow:"0 6px 20px rgba(0,198,255,.4)",zIndex:150}}>
+        💬
+      </button>
+
       {/* Bottom Nav */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
         {navBtn("market","Market","📈")}
@@ -734,4 +805,4 @@ export default function App(){
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
     </div>
   );
-                                                             }
+}

@@ -218,22 +218,43 @@ function LoginPage({ onAuth }) {
       `}</style>
 
       {/* Header */}
-      <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 20px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff"}}>AF</div>
-          <div>
-            <div style={{fontWeight:800,fontSize:15,letterSpacing:-.3,lineHeight:1}}>
-              <span style={{color:C.accent}}>Automated</span>
-              <span style={{color:C.text}}> Financial</span>
-            </div>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div>
-          </div>
+      <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 20px",height:50,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{fontWeight:700,fontSize:13,color:C.text}}>Automated Financial Marketing</div>
+        <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px"}}>
+          <span style={{fontSize:12}}>🕐</span>
+          <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>{fmtTime(serverTime)}</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,padding:"6px 12px"}}>
-          <span style={{fontSize:14}}>🕐</span>
+      </div>
+
+      {/* Logo Banner */}
+      <div style={{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#0A1F3D,#0C2A4A)",padding:"22px 20px",borderBottom:`2px solid ${C.accent}`}}>
+        <svg width="100%" height="100%" style={{position:"absolute",inset:0,opacity:.25}} viewBox="0 0 400 140">
+          {[...Array(14)].map((_,i)=>(
+            <circle key={i} cx={Math.random()*400} cy={Math.random()*140} r="1.6" fill={C.accent}/>
+          ))}
+          <line x1="20" y1="20" x2="120" y2="60" stroke={C.accent} strokeWidth=".5"/>
+          <line x1="120" y1="60" x2="220" y2="30" stroke={C.accent} strokeWidth=".5"/>
+          <line x1="220" y1="30" x2="320" y2="90" stroke={C.accent} strokeWidth=".5"/>
+          <line x1="60" y1="100" x2="180" y2="70" stroke={C.accent} strokeWidth=".5"/>
+        </svg>
+        <div style={{position:"relative",display:"flex",alignItems:"center",gap:14}}>
+          <svg width="58" height="58" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="bullGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={C.gold}/>
+                <stop offset="100%" stopColor={C.accent}/>
+              </linearGradient>
+            </defs>
+            <path d="M50 12 L38 30 L20 24 L28 42 L15 50 L30 56 L25 75 L45 65 L50 88 L55 65 L75 75 L70 56 L85 50 L72 42 L80 24 L62 30 Z" fill="url(#bullGrad)" opacity="0.95"/>
+            <circle cx="50" cy="52" r="20" fill="#0A1F3D"/>
+            <path d="M38 44 Q50 36 62 44" stroke={C.gold} strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+            <circle cx="42" cy="52" r="3" fill={C.accent}/>
+            <circle cx="58" cy="52" r="3" fill={C.accent}/>
+            <path d="M44 62 Q50 67 56 62" stroke={C.gold} strokeWidth="2" fill="none" strokeLinecap="round"/>
+          </svg>
           <div>
-            <div style={{fontSize:9,color:C.muted}}>Server time</div>
-            <div style={{fontSize:11,color:C.gold,fontFamily:"monospace"}}>{fmtTime(serverTime)}</div>
+            <div style={{fontWeight:900,fontSize:21,letterSpacing:-.5,color:"#fff",lineHeight:1.05}}>AUTOMATED</div>
+            <div style={{fontWeight:900,fontSize:21,letterSpacing:-.5,background:`linear-gradient(90deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",lineHeight:1.05}}>FINANCIAL MARKETING</div>
           </div>
         </div>
       </div>
@@ -248,6 +269,7 @@ function LoginPage({ onAuth }) {
           <h1 style={{margin:0,fontSize:28,fontWeight:900,lineHeight:1.2,letterSpacing:-.5}}>
             Grow Your Future<br/>
             <span style={{background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Through Technology</span>
+
           </h1>
           <p style={{margin:"10px 0 0",color:C.subtext,fontSize:13}}>Trade crypto assets with confidence</p>
         </div>

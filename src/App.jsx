@@ -74,27 +74,6 @@ Please reply with your selections (e.g. "1) Beginner, 2) Passive automated tradi
   window.location.href = mailto;
 }
 
-function openWithdrawalEmail(userName, userEmail, amount, walletAddress, coinType){
-  const subject = `Withdrawal Request — ${amount} ${coinType} from ${userName}`;
-  const body =
-`Withdrawal Request Details:
-
-User Name: ${userName}
-User Email: ${userEmail}
-Amount: ${amount} ${coinType}
-Wallet Address: ${walletAddress}
-Requested At: ${new Date().toLocaleString()}
-
-Status: Pending Review
-
-Please verify this withdrawal request and process accordingly.
-
-— Automated Financial Marketing System`;
-
-  const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
-}
-
 function makeToast(type) {
   const name   = randItem(FAKE_NAMES);
   const amount = randItem(FAKE_AMOUNTS);
@@ -456,130 +435,8 @@ function TradeModal({crypto,user,onClose,onTrade}){
   );
 }
 
-// ── Withdrawal Modal ─────────────────────────────────────────────────────────
-function WithdrawalModal({user,onClose}){
-  const [amount,setAmount]=useState("");
-  const [walletAddr,setWalletAddr]=useState("");
-  const [coinType,setCoinType]=useState("BTC");
-  const [msg,setMsg]=useState("");
-
-  const submit=()=>{
-    setMsg("");
-    const n=parseFloat(amount);
-    if(!n||n<=0) return setMsg("Enter a valid amount.");
-    if(n>user.balance) return setMsg("Insufficient balance.");
-    if(!walletAddr||walletAddr.length<20) return setMsg("Enter a valid wallet address.");
-    
-    // Send to email
-    openWithdrawalEmail(user.name,user.email,n,walletAddr,coinType);
-    setMsg(`✓ Withdrawal request sent! Check your email confirmation.`);
-    setTimeout(()=>onClose(),2000);
-  };
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
-          <div style={{fontWeight:800,fontSize:16}}>💸 Withdraw Funds</div>
-          <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
-        </div>
-
-        <div style={{background:"#0A1628",borderRadius:10,padding:"10px 14px",marginBottom:18,fontSize:12,color:C.muted,lineHeight:1.6}}>
-          Your available balance: <span style={{color:C.green,fontWeight:700}}>${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
-        </div>
-
-        <div style={{marginBottom:10,fontSize:13,color:C.subtext,fontWeight:600}}>Coin Type</div>
-        <select value={coinType} onChange={e=>setCoinType(e.target.value)}
-          style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}>
-          <option value="BTC">Bitcoin (BTC)</option>
-          <option value="ETH">Ethereum (ETH)</option>
-          <option value="USDT">USDT (ERC20)</option>
-          <option value="USDC">USDC (ERC20)</option>
-          <option value="SOL">Solana (SOL)</option>
-        </select>
-
-        <div style={{marginBottom:6,fontSize:13,color:C.subtext,fontWeight:600}}>Withdrawal Amount</div>
-        <div style={{position:"relative",marginBottom:14}}>
-          <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted}}>$</span>
-          <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00"
-            style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px 10px 28px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
-        </div>
-
-        <div style={{display:"flex",gap:8,marginBottom:14}}>
-          {[100,250,500,1000].map(v=>(
-            user.balance>=v&&<button key={v} onClick={()=>setAmount(String(v))}
-              style={{flex:1,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:6,color:C.subtext,fontSize:11,padding:"6px 0",cursor:"pointer"}}>
-              ${v}
-            </button>
-          ))}
-        </div>
-
-        <div style={{marginBottom:6,fontSize:13,color:C.subtext,fontWeight:600}}>Wallet Address</div>
-        <input type="text" value={walletAddr} onChange={e=>setWalletAddr(e.target.value)} placeholder="Your receiving wallet address..."
-          style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:12,outline:"none",marginBottom:14,boxSizing:"border-box",fontFamily:"monospace"}}/>
-
-        {msg&&<div style={{marginBottom:10,fontSize:12,padding:"8px 12px",borderRadius:7,background:msg.startsWith("✓")?"#0D2B1A":"#2B0A0A",color:msg.startsWith("✓")?C.green:C.red}}>{msg}</div>}
-
-        <button onClick={submit}
-          style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,
-            background:`linear-gradient(135deg,${C.gold},#D4A017)`,color:"#000"}}>
-          💸 Send Withdrawal Request
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── Deposit Modal ─────────────────────────────────────────────────────────────
-function DepositModal({onClose}){
-  const networks=[
-    {name:"Bitcoin (BTC)",addr:"bc1qptzxttxd53jk3xqku3wdmlsfjy73hquerqhhy7",icon:"₿",color:"#F7931A"},
-    {name:"USDT (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"₮",color:"#26A17B"},
-    {name:"Solana (SOL)",addr:"FMn7bivQuYzKWaE5hLXJBbtNbxDez6jswXCsjqFKvk3U",icon:"◎",color:"#9945FF"},
-    {name:"USDC (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"$",color:"#2775CA"},
-  ];
-  const [copied,setCopied]=useState(null);
-  const copy=(addr,name)=>{
-    navigator.clipboard?.writeText(addr);
-    setCopied(name);
-    setTimeout(()=>setCopied(null),2000);
-  };
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
-          <div style={{fontWeight:800,fontSize:16}}>💳 Deposit Funds</div>
-          <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
-        </div>
-        <div style={{background:"#0A1628",borderRadius:10,padding:"10px 14px",marginBottom:18,fontSize:12,color:C.muted,lineHeight:1.6}}>
-          Send your deposit to one of the addresses below. Your balance will be updated after confirmation. Minimum deposit: <span style={{color:C.accent}}>$50</span>
-        </div>
-        {networks.map(n=>(
-          <div key={n.name} style={{background:"#040A15",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-              <span style={{color:n.color,fontWeight:700,fontSize:18}}>{n.icon}</span>
-              <span style={{fontWeight:700,fontSize:13,color:C.text}}>{n.name}</span>
-            </div>
-            <div style={{fontFamily:"monospace",fontSize:10,color:C.muted,wordBreak:"break-all",marginBottom:8,padding:"8px 10px",background:"#0C1526",borderRadius:6}}>{n.addr}</div>
-            <button onClick={()=>copy(n.addr,n.name)}
-              style={{width:"100%",padding:"7px 0",borderRadius:7,border:`1px solid ${C.border}`,background:"#0A1628",color:copied===n.name?C.green:C.subtext,fontSize:12,cursor:"pointer",fontWeight:600}}>
-              {copied===n.name?"✓ Copied!":"Copy Address"}
-            </button>
-          </div>
-        ))}
-        <button onClick={openSupportEmail}
-          style={{width:"100%",marginTop:4,padding:"11px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-          💬 Notify Support After Sending
-        </button>
-        <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:8}}>After sending, contact support with your TX hash</div>
-      </div>
-    </div>
-  );
-}
-
-// ── Admin Page (separate from user app) ──────────────────────────────────────
-function AdminPage(){
+// ── Admin Panel (password gated) ──────────────────────────────────────────────
+function AdminPanel({onClose}){
   const [pwd,setPwd]=useState("");
   const [adminToken,setAdminToken]=useState(()=>sessionStorage.getItem("afm_admin_token")||"");
   const [authErr,setAuthErr]=useState("");
@@ -633,37 +490,23 @@ function AdminPage(){
     }
   };
 
-  const logout=()=>{
-    sessionStorage.removeItem("afm_admin_token");
-    setAdminToken("");
-    setPwd("");
-    setUsers([]);
-    setDeposits([]);
-  };
-
   if(!adminToken){
     return(
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
-        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420,boxShadow:"0 24px 80px rgba(0,0,0,.6)"}}>
-          <div style={{textAlign:"center",marginBottom:28}}>
-            <div style={{fontSize:40,marginBottom:12}}>🔐</div>
-            <div style={{fontWeight:800,fontSize:22,color:C.text}}>Admin Dashboard</div>
-            <div style={{fontSize:13,color:C.muted,marginTop:6}}>Enter your admin password to continue</div>
+      <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:32,width:320}} onClick={e=>e.stopPropagation()}>
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:28,marginBottom:8}}>🔐</div>
+            <div style={{fontWeight:700,fontSize:16,color:C.text}}>Admin Access</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:4}}>Enter admin password</div>
           </div>
-
-          <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} onKeyPress={e=>e.key==="Enter"&&login()} placeholder="Admin password"
-            style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"12px 16px",fontSize:14,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
-          
+          <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} placeholder="Admin password"
+            style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:14,outline:"none",boxSizing:"border-box",marginBottom:12}}/>
           <button onClick={login} disabled={loading}
-            style={{width:"100%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,color:"#fff",border:"none",borderRadius:10,padding:"12px 0",fontWeight:700,cursor:"pointer",fontSize:14,opacity:loading?.7:1,marginBottom:10}}>
-            {loading?"Checking...":"Unlock Admin Access"}
+            style={{width:"100%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,color:"#fff",border:"none",borderRadius:10,padding:"12px 0",fontWeight:700,cursor:"pointer",opacity:loading?.7:1}}>
+            {loading?"Checking...":"Unlock"}
           </button>
-
-          {authErr&&<div style={{color:C.red,fontSize:12,textAlign:"center",background:"#2B0A0A",padding:"8px 12px",borderRadius:7,border:`1px solid #4A1010`}}>{authErr}</div>}
-
-          <div style={{textAlign:"center",marginTop:16}}>
-            <a href="/" style={{color:C.accent,fontSize:12,textDecoration:"none",cursor:"pointer"}}>← Back to platform</a>
-          </div>
+          {authErr&&<div style={{color:C.red,fontSize:12,textAlign:"center",marginTop:8}}>{authErr}</div>}
+          <button onClick={onClose} style={{width:"100%",marginTop:8,background:"none",border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 0",color:C.muted,cursor:"pointer",fontSize:13}}>Cancel</button>
         </div>
       </div>
     );
@@ -696,46 +539,42 @@ function AdminPage(){
   );
 
   return(
-    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
-      {/* Header */}
-      <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
-        <div>
-          <div style={{fontWeight:800,fontSize:18,color:C.gold}}>⚙️ Admin Dashboard</div>
-          <div style={{fontSize:11,color:C.muted,marginTop:4}}>Automated Financial Marketing</div>
-        </div>
-        <button onClick={logout} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>Sign Out</button>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.9)",zIndex:999,display:"flex",flexDirection:"column"}}>
+      <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 18px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+        <div style={{fontWeight:800,fontSize:16,color:C.gold}}>⚙️ Admin Dashboard</div>
+        <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
       </div>
 
-      {/* Tabs */}
       <div style={{display:"flex",background:"#040A15",borderBottom:`1px solid ${C.border}`,flexShrink:0}}>
         {["users","deposits"].map(t=>(
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"12px 0",border:"none",cursor:"pointer",fontSize:13,fontWeight:700,
+          <button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"11px 0",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,
             background:tab===t?C.card:"transparent",color:tab===t?C.gold:C.muted,borderBottom:tab===t?`2px solid ${C.gold}`:"2px solid transparent"}}>
             {t==="users"?`👥 Users (${users.length})`:`💰 Deposits (${deposits.length})`}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div style={{flex:1,overflowY:"auto",padding:20}}>
-        {tab==="users"?(
+      <div style={{flex:1,overflowY:"auto",padding:14}}>
+        {loading&&users.length===0?(
+          <div style={{textAlign:"center",color:C.muted,padding:40}}>Loading...</div>
+        ):tab==="users"?(
           <>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name or email..."
-              style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"10px 14px",fontSize:13,outline:"none",marginBottom:16,boxSizing:"border-box"}}/>
+              style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"10px 14px",fontSize:13,outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
             {filtered.length===0?(
               <div style={{textAlign:"center",color:C.muted,padding:40,fontSize:13}}>No users found.</div>
             ):filtered.map(u=>(
               <div key={u._id} onClick={()=>{setSelected(u);setMsg("");setAddAmt("");}}
-                style={{background:selected?._id===u._id?`${C.gold}11`:C.card,border:`1px solid ${selected?._id===u._id?C.gold:C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10,cursor:"pointer",transition:"all .2s"}}>
+                style={{background:selected?._id===u._id?`${C.gold}11`:C.card,border:`1px solid ${selected?._id===u._id?C.gold:C.border}`,borderRadius:12,padding:"12px 14px",marginBottom:8,cursor:"pointer"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div>
-                    <div style={{fontWeight:700,fontSize:14,color:C.text}}>{u.name}</div>
-                    <div style={{fontSize:12,color:C.muted}}>{u.email}</div>
-                    <div style={{fontSize:10,color:C.muted,marginTop:4}}>Joined {new Date(u.createdAt).toLocaleDateString()}</div>
+                    <div style={{fontWeight:700,fontSize:13,color:C.text}}>{u.name}</div>
+                    <div style={{fontSize:11,color:C.muted}}>{u.email}</div>
+                    <div style={{fontSize:10,color:C.muted,marginTop:2}}>Joined {new Date(u.createdAt).toLocaleDateString()}</div>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontWeight:800,fontFamily:"monospace",fontSize:16,color:C.green}}>${(u.balance||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-                    <div style={{fontSize:11,color:C.muted}}>{(u.portfolio||[]).length} position{u.portfolio?.length!==1?"s":""}</div>
+                    <div style={{fontWeight:700,fontFamily:"monospace",fontSize:14,color:C.green}}>${(u.balance||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+                    <div style={{fontSize:10,color:C.muted}}>{(u.portfolio||[]).length} positions</div>
                   </div>
                 </div>
               </div>
@@ -745,30 +584,29 @@ function AdminPage(){
           deposits.length===0?(
             <div style={{textAlign:"center",color:C.muted,padding:40,fontSize:13}}>No deposits recorded yet.</div>
           ):deposits.map((d,i)=>(
-            <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",marginBottom:8}}>
+              <div style={{display:"flex",justifyContent:"space-between"}}>
                 <div>
-                  <div style={{fontWeight:700,fontSize:14}}>{d.userName}</div>
-                  <div style={{fontSize:12,color:C.muted}}>{d.userEmail}</div>
-                  <div style={{fontSize:11,color:C.muted,marginTop:4}}>{new Date(d.createdAt).toLocaleString()}</div>
+                  <div style={{fontWeight:700,fontSize:13}}>{d.userName}</div>
+                  <div style={{fontSize:11,color:C.muted}}>{d.userEmail}</div>
+                  <div style={{fontSize:10,color:C.muted,marginTop:2}}>{new Date(d.createdAt).toLocaleString()}</div>
                 </div>
-                <div style={{fontWeight:800,fontFamily:"monospace",color:C.gold,fontSize:16}}>+${d.amount.toLocaleString()}</div>
+                <div style={{fontWeight:700,fontFamily:"monospace",color:C.gold,fontSize:14}}>+${d.amount.toLocaleString()}</div>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* Add Funds Panel */}
       {selected&&(
-        <div style={{background:C.surface,borderTop:`1px solid ${C.gold}`,padding:20,flexShrink:0}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <div style={{fontWeight:700,fontSize:14,color:C.text}}>💰 Add Balance: {selected.name}</div>
-            <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}>✕</button>
+        <div style={{background:C.surface,borderTop:`1px solid ${C.gold}`,padding:18,flexShrink:0}} onClick={e=>e.stopPropagation()}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <div style={{fontWeight:700,fontSize:13,color:C.text}}>Add funds: {selected.name}</div>
+            <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:C.muted,fontSize:16,cursor:"pointer"}}>✕</button>
           </div>
           <div style={{position:"relative",marginBottom:10}}>
             <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted}}>$</span>
-            <input type="number" value={addAmt} onChange={e=>setAddAmt(e.target.value)} placeholder="Amount"
+            <input type="number" value={addAmt} onChange={e=>setAddAmt(e.target.value)} placeholder="Amount to add"
               style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px 10px 28px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
           </div>
           <div style={{display:"flex",gap:8,marginBottom:10}}>
@@ -781,7 +619,7 @@ function AdminPage(){
           </div>
           {msg&&<div style={{marginBottom:10,fontSize:12,padding:"8px 12px",borderRadius:7,background:msg.startsWith("✓")?"#0D2B1A":"#2B0A0A",color:msg.startsWith("✓")?C.green:C.red}}>{msg}</div>}
           <button onClick={applyDeposit} disabled={loading}
-            style={{width:"100%",padding:"11px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:13,
+            style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,
               background:`linear-gradient(135deg,${C.gold},#D4A017)`,color:"#000",opacity:loading?.7:1}}>
             {loading?"Processing...":"💰 Add Balance"}
           </button>
@@ -791,7 +629,56 @@ function AdminPage(){
   );
 }
 
+// ── Deposit Modal ─────────────────────────────────────────────────────────────
+function DepositModal({onClose}){
+  const networks=[
+    {name:"Bitcoin (BTC)",addr:"bc1qptzxttxd53jk3xqku3wdmlsfjy73hquerqhhy7",icon:"₿",color:"#F7931A"},
+    {name:"USDT (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"₮",color:"#26A17B"},
+    {name:"Solana (SOL)",addr:"FMn7bivQuYzKWaE5hLXJBbtNbxDez6jswXCsjqFKvk3U",icon:"◎",color:"#9945FF"},
+    {name:"USDC (ERC20)",addr:"0x1428c889083234E6F158EAD22397C578E410e3B2",icon:"$",color:"#2775CA"},
+  ];
+  const [copied,setCopied]=useState(null);
+  const copy=(addr,name)=>{
+    navigator.clipboard?.writeText(addr);
+    setCopied(name);
+    setTimeout(()=>setCopied(null),2000);
+  };
 
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+          <div style={{fontWeight:800,fontSize:16}}>💳 Deposit Funds</div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
+        </div>
+        <div style={{background:"#0A1628",borderRadius:10,padding:"10px 14px",marginBottom:18,fontSize:12,color:C.muted,lineHeight:1.6}}>
+          Send your deposit to one of the addresses below. Your balance will be updated after confirmation. Minimum deposit: <span style={{color:C.accent}}>$50</span>
+        </div>
+        {networks.map(n=>(
+          <div key={n.name} style={{background:"#040A15",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+              <span style={{color:n.color,fontWeight:700,fontSize:18}}>{n.icon}</span>
+              <span style={{fontWeight:700,fontSize:13,color:C.text}}>{n.name}</span>
+            </div>
+            <div style={{fontFamily:"monospace",fontSize:10,color:C.muted,wordBreak:"break-all",marginBottom:8,padding:"8px 10px",background:"#0C1526",borderRadius:6}}>{n.addr}</div>
+            <button onClick={()=>copy(n.addr,n.name)}
+              style={{width:"100%",padding:"7px 0",borderRadius:7,border:`1px solid ${C.border}`,background:"#0A1628",color:copied===n.name?C.green:C.subtext,fontSize:12,cursor:"pointer",fontWeight:600}}>
+              {copied===n.name?"✓ Copied!":"Copy Address"}
+            </button>
+          </div>
+        ))}
+        <button onClick={openSupportEmail}
+          style={{width:"100%",marginTop:4,padding:"11px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          💬 Notify Support After Sending
+        </button>
+        <div style={{fontSize:11,color:C.muted,textAlign:"center",marginTop:8}}>After sending, contact support with your TX hash</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Dashboard ────────────────────────────────────────────────────────────
+export default function App(){
   const [user,setUser]=useState(null);
   const [authChecked,setAuthChecked]=useState(false);
   const [tab,setTab]=useState("market");
@@ -802,8 +689,8 @@ function AdminPage(){
   const [txHistory,setTxHistory]=useState([]);
   const [tradeCrypto,setTradeCrypto]=useState(null);
   const [search,setSearch]=useState("");
+  const [showAdmin,setShowAdmin]=useState(false);
   const [showDeposit,setShowDeposit]=useState(false);
-  const [showWithdrawal,setShowWithdrawal]=useState(false);
   const [toasts,setToasts]=useState([]);
   const [tradeErr,setTradeErr]=useState("");
 
@@ -937,7 +824,7 @@ function AdminPage(){
             <div style={{fontSize:10,color:C.muted}}>Portfolio</div>
             <div style={{fontSize:13,fontWeight:800,color:C.text,fontFamily:"monospace"}}>${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
           </div>
-          <div onClick={()=>setTab("account")} style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,cursor:"pointer"}}>
+          <div onClick={()=>setShowAdmin(true)} style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800,fontSize:13,cursor:"pointer"}}>
             {user.name[0].toUpperCase()}
           </div>
         </div>
@@ -1093,8 +980,8 @@ function AdminPage(){
             <button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginTop:6,marginBottom:8,padding:"12px 0",borderRadius:10,border:"none",background:`linear-gradient(135deg,${C.accent},#0057FF)`,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
               💳 Deposit Funds
             </button>
-            <button onClick={()=>setShowWithdrawal(true)} style={{width:"100%",marginBottom:8,padding:"11px 0",borderRadius:10,border:`1px solid ${C.gold}`,background:`${C.gold}11`,color:C.gold,fontWeight:700,fontSize:13,cursor:"pointer"}}>
-              💸 Withdraw Funds
+            <button onClick={()=>setShowAdmin(true)} style={{width:"100%",marginBottom:8,padding:"11px 0",borderRadius:10,border:`1px solid ${C.gold}`,background:`${C.gold}11`,color:C.gold,fontWeight:700,fontSize:13,cursor:"pointer"}}>
+              ⚙️ Admin Panel
             </button>
             <button onClick={signOut} style={{width:"100%",padding:"11px 0",borderRadius:10,border:`1px solid ${C.border}`,background:"transparent",color:C.red,fontWeight:700,fontSize:13,cursor:"pointer"}}>
               Sign Out
@@ -1122,14 +1009,8 @@ function AdminPage(){
 
       <ToastStack toasts={toasts}/>
       {tradeCrypto&&<TradeModal crypto={tradeCrypto} user={user} onClose={()=>setTradeCrypto(null)} onTrade={(s,c,u,q)=>{onTrade(s,c,u,q);}}/>}
+      {showAdmin&&<AdminPanel onClose={()=>setShowAdmin(false)}/>}
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
-      {showWithdrawal&&<WithdrawalModal user={user} onClose={()=>setShowWithdrawal(false)}/>}
     </div>
   );
-}
-
-// ── Routing wrapper ──────────────────────────────────────────────────────────
-export default function AppRouter(){
-  const isAdmin = window.location.pathname === "/admin";
-  return isAdmin ? <AdminPage/> : <App/>;
 }

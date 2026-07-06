@@ -25,7 +25,7 @@ const WALLETS = {
 };
 
 const FAKE_NAMES = ["James K.","Maria S.","Ahmed R.","Liu W.","Fatima O.","Carlos M.","Priya N.","David T.","Sophie L."];
-const COUNTRIES = ["🇺🇸","🇬🇧","🇳🇬","🇨🇦","🇦🇺","🇩🇪","🇫🇷"];
+const COUNTRIES = ["🇺🇸","🇬🇧","🇧🇷","🇨🇦","🇦🇺","🇩🇪","🇫🇷","🇰🇷","🇱🇷","🇳🇴","🇹🇹","🇸🇬","🇸🇲"];
 
 const randItem = arr => arr[Math.floor(Math.random() * arr.length)];
 const genChart = (base, n=20) => { let v=base, d=[]; for(let i=0;i<n;i++){v=v*(1+(Math.random()-0.48)*0.03);d.push(+v.toFixed(2));} return d; };

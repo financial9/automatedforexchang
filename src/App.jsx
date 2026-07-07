@@ -25,7 +25,8 @@ const WALLETS = {
 };
 
 const FAKE_NAMES = ["James K.","Maria S.","Ahmed R.","Liu W.","Fatima O.","Carlos M.","Priya N.","David T.","Sophie L."];
-const COUNTRIES = ["🇺🇸","🇬🇧","🇧🇷","🇨🇦","🇦🇺","🇩🇪","🇫🇷","🇰🇷","🇱🇷","🇳🇴","🇹🇹","🇸🇬","🇸🇲"];
+const FAKE_AMOUNTS = [500,1000,2500,5000,750,1200,3000];
+const COUNTRIES = ["🇺🇸","🇬🇧","🇳🇬","🇨🇦","🇦🇺","🇩🇪","🇫🇷"];
 
 const randItem = arr => arr[Math.floor(Math.random() * arr.length)];
 const genChart = (base, n=20) => { let v=base, d=[]; for(let i=0;i<n;i++){v=v*(1+(Math.random()-0.48)*0.03);d.push(+v.toFixed(2));} return d; };
@@ -48,7 +49,9 @@ function ToastStack({ toasts }) {
       ))}
     </div>
   );
-  }function Ticker({ cryptos }) {
+}
+
+function Ticker({ cryptos }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -77,7 +80,9 @@ function ToastStack({ toasts }) {
       </div>
     </div>
   );
-      }function DepositModal({ onClose }) {
+}
+
+function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
     navigator.clipboard?.writeText(addr);
@@ -90,9 +95,7 @@ function ToastStack({ toasts }) {
     { name: "USDT (ERC20)", addr: WALLETS.USDT, icon: "≈", color: "#26A17B" },
     { name: "Solana (SOL)", addr: WALLETS.SOL, icon: "◎", color: "#9945FF" },
     { name: "USDC (ERC20)", addr: WALLETS.USDC, icon: "U", color: "#2775CA" },
-  ];
-
-  return (
+  ];return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -117,8 +120,9 @@ function ToastStack({ toasts }) {
       </div>
     </div>
   );
-        }
-                         function TradeModal({ crypto, user, onClose, onTrade }) {
+}
+
+function TradeModal({ crypto, user, onClose, onTrade }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -173,7 +177,9 @@ function ToastStack({ toasts }) {
               {pct}%
             </button>
           ))}
-        </div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+        </div>
+
+        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:(holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0")}
           </span>
@@ -187,9 +193,7 @@ function ToastStack({ toasts }) {
       </div>
     </div>
   );
-}
-
-function LoginPage({ onAuth }) {
+          }function LoginPage({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({name:"",email:"",password:"",confirm:""});
   const [err, setErr] = useState("");
@@ -197,12 +201,24 @@ function LoginPage({ onAuth }) {
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
-    const types = ["deposit","withdraw","trade"];
+    const events = [
+      {type:"deposit", icon:"💰"},
+      {type:"withdraw", icon:"🏆"},
+      {type:"register", icon:"✅"},
+      {type:"bought", icon:"📈"}
+    ];
     const fire = () => {
+      const event = randItem(events);
       const coin = randItem(CRYPTOS);
       const name = randItem(FAKE_NAMES);
+      const amount = randItem(FAKE_AMOUNTS);
       const flag = randItem(COUNTRIES);
-      const t = { id: Date.now()+Math.random(), text:`${flag} ${name} bought ${coin.id}`, icon:"📈" };
+      let text = "";
+      if(event.type==="deposit") text = `${flag} ${name} deposited $${amount.toLocaleString()}`;
+      else if(event.type==="withdraw") text = `${flag} ${name} withdrew $${amount.toLocaleString()} profit`;
+      else if(event.type==="register") text = `${flag} ${name} registered with $${amount.toLocaleString()}`;
+      else text = `${flag} ${name} bought ${coin.id}`;
+      const t = { id: Date.now()+Math.random(), text, icon:event.icon };
       setToasts(p=>[t,...p].slice(0,3));
       setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==t.id)),4000);
     };
@@ -218,7 +234,8 @@ function LoginPage({ onAuth }) {
       if(!form.name) return setErr("Name required.");
       if(form.password!==form.confirm) return setErr("Passwords don't match.");
       if(form.password.length<6) return setErr("Password 6+ chars.");
-          }setLoading(true);
+    }
+    setLoading(true);
     try {
       const endpoint = mode==="register" ? "/api/signup" : "/api/login";
       const res = await fetch(endpoint, {
@@ -234,8 +251,7 @@ function LoginPage({ onAuth }) {
     }
     setLoading(false);
   };
-
-  return (
+                                       return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       {/* Header */}
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -249,42 +265,50 @@ function LoginPage({ onAuth }) {
             <div style={{fontSize:8,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div>
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 10px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`2px solid ${C.accent}`,borderRadius:10,padding:"6px 12px"}}>
           <span style={{fontSize:12}}>🕐</span>
-          <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>29, June 2026</span>
+          <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>29, June 2026 / 09:17:12AM</span>
         </div>
       </div>
 
       <Ticker cryptos={CRYPTOS}/>
-        {/* Login Content */}
+
+      {/* Main Content */}
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
-      <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:360}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <h1 style={{margin:0,fontSize:24,fontWeight:900}}>Automated Financial</h1>
-          <p style={{margin:"4px 0 0 0",fontSize:11,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</p>
-        </div>
-        
-        <div style={{display:"flex",background:"#040A15",borderRadius:10,padding:4,marginBottom:20}}>
-          {["login","register"].map(m=>(
-            <button key={m} onClick={()=>{setMode(m);setErr("");}} style={{flex:1,padding:"9px 0",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:mode===m?C.accent:"transparent",color:mode===m?"#000":C.muted}}>
-              {m==="login"?"Sign In":"Sign Up"}
-            </button>
-          ))}
+        <div style={{textAlign:"center",marginBottom:32,maxWidth:520}}>
+          <div style={{fontSize:11,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Institutional-Grade Crypto Platform</div>
+          <h1 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,marginBottom:8}}>
+            Grow Your Future
+          </h1>
+          <h2 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>
+            Through Technology
+          </h2>
+          <p style={{margin:0,color:C.subtext,fontSize:14}}>Trade crypto assets with confidence</p>
         </div>
 
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {mode==="register"&&<input placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
-          <input placeholder="Email" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
-          <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
-          {mode==="register"&&<input placeholder="Confirm password" type="password" value={form.confirm} onChange={e=>setForm(f=>({...f,confirm:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
-          
-          {err&&<div style={{color:C.red,fontSize:12,background:"#2A0A0A",padding:"8px 12px",borderRadius:7}}>{err}</div>}
-          
-          <button onClick={submit} disabled={loading} style={{background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:800,cursor:"pointer",opacity:loading?0.6:1}}>
-            {loading?"Please wait...":"Continue"}
-          </button>
+        {/* Auth Card */}
+        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:360}}>
+          <div style={{display:"flex",background:"#040A15",borderRadius:10,padding:4,marginBottom:20}}>
+            {["login","register"].map(m=>(
+              <button key={m} onClick={()=>{setMode(m);setErr("");}} style={{flex:1,padding:"9px 0",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:mode===m?C.accent:"transparent",color:mode===m?"#000":C.muted}}>
+                {m==="login"?"Sign In":"Create Account"}
+              </button>
+            ))}
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {mode==="register"&&<input placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
+            <input placeholder="Email address" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+            <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+            {mode==="register"&&<input placeholder="Confirm password" type="password" value={form.confirm} onChange={e=>setForm(f=>({...f,confirm:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
+            
+            {err&&<div style={{color:C.red,fontSize:12,background:"#2A0A0A",padding:"8px 12px",borderRadius:7}}>{err}</div>}
+            
+            <button onClick={submit} disabled={loading} style={{background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:800,fontSize:14,cursor:"pointer",opacity:loading?0.6:1}}>
+              {loading?"Please wait...":mode==="login"?"Sign In →":"Create Account →"}
+            </button>
+          </div>
         </div>
-      </div>
       </div>
       <ToastStack toasts={toasts}/>
     </div>
@@ -304,12 +328,13 @@ function Dashboard({ user, setUser, onLogout }) {
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
-    const types = ["trade"];
+    const types = ["bought","sold"];
     const fire = () => {
+      const event = randItem(types);
       const coin = randItem(CRYPTOS);
       const name = randItem(FAKE_NAMES);
       const flag = randItem(COUNTRIES);
-      const t = { id: Date.now()+Math.random(), text:`${flag} ${name} bought ${coin.id}`, icon:"📈" };
+      const t = { id: Date.now()+Math.random(), text:`${flag} ${name} ${event} ${coin.id}`, icon:"📈" };
       setToasts(p=>[t,...p].slice(0,3));
       setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==t.id)),4500);
     };
@@ -354,7 +379,9 @@ function Dashboard({ user, setUser, onLogout }) {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );return (
+  );
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
@@ -366,11 +393,11 @@ function Dashboard({ user, setUser, onLogout }) {
       <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>
         {tab==="market"&&(
           <div style={{padding:14}}>
-            <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.accent}`,borderRadius:14,padding:"14px 16px",marginBottom:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12,onClick:()=>setShowDeposit(true)}}>
+            <div onClick={()=>setShowDeposit(true)} style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`2px solid ${C.accent}`,borderRadius:14,padding:"14px 16px",marginBottom:14,cursor:"pointer",display:"flex",alignItems:"center",gap:12}}>
               <div style={{width:40,height:40,borderRadius:10,background:`${C.accent}22`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>💳</div>
               <div style={{flex:1}}>
                 <div style={{fontWeight:700,fontSize:13,color:C.text}}>Fund Your Account</div>
-                <div style={{fontSize:11,color:C.muted,marginTop:2}}>Deposit crypto & start trading</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:2}}>Deposit crypto & start trading instantly</div>
               </div>
               <span style={{color:C.accent,fontSize:18}}>›</span>
             </div>
@@ -393,7 +420,7 @@ function Dashboard({ user, setUser, onLogout }) {
             ))}
           </div>
         )}
-                            {tab==="portfolio"&&(
+        {tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
               {[
@@ -464,7 +491,23 @@ function Dashboard({ user, setUser, onLogout }) {
               </div>
             ))}
           </div>
-        )}{tab==="account"&&(
+        )}
+
+        {tab==="account"&&(
+          <div style={{padding:14}}>
+            <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
+              <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
+                {user.name[0].toUpperCase()}
+              </div>
+              <div style={{fontWeight:800,fontSize:17}}>{user.name}</div>
+              <div style={{color:C.muted,fontSize:12,marginTop:2}}>{user.email}</div>
+              <div style={{marginTop:12,background:"#040A15",borderRadius:8,padding:"8px 18px",display:"inline-block"}}>
+                <div style={{fontSize:10,color:C.muted}}>Account Status</div>
+                <div style={{color:C.green,fontWeight:700,fontSize:12}}>✓ Verified</div>
+              </div>
+            </div>)}
+
+        {tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
               <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
@@ -513,7 +556,9 @@ function Dashboard({ user, setUser, onLogout }) {
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
     </div>
   );
-}export default function App() {
+}
+
+export default function App() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -531,4 +576,4 @@ function Dashboard({ user, setUser, onLogout }) {
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-}
+                      }

@@ -81,6 +81,7 @@ function Ticker({ cryptos }) {
     </div>
   );
 }
+
 function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
@@ -94,9 +95,7 @@ function DepositModal({ onClose }) {
     { name: "USDT (ERC20)", addr: WALLETS.USDT, icon: "≈", color: "#26A17B" },
     { name: "Solana (SOL)", addr: WALLETS.SOL, icon: "◎", color: "#9945FF" },
     { name: "USDC (ERC20)", addr: WALLETS.USDC, icon: "U", color: "#2775CA" },
-  ];
-
-  return (
+  ];return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -251,7 +250,9 @@ function LoginPage({ onAuth }) {
       setErr("Network error");
     }
     setLoading(false);
-  };return (
+  };
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       {/* Header */}
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -269,9 +270,7 @@ function LoginPage({ onAuth }) {
           <span style={{fontSize:12}}>🕐</span>
           <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>29, June 2026 / 09:17:12AM</span>
         </div>
-      </div>
-
-      <Ticker cryptos={CRYPTOS}/>
+      </div><Ticker cryptos={CRYPTOS}/>
 
       {/* Main Content */}
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
@@ -313,7 +312,9 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}function Dashboard({ user, setUser, onLogout }) {
+}
+
+function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -344,9 +345,7 @@ function LoginPage({ onAuth }) {
   useEffect(() => {
     const iv = setInterval(() => setPrices(prev=>prev.map(c=>({...c,price:+(c.price*(1+(Math.random()-.49)*.002)).toFixed(c.price<1?4:2)}))), 2000);
     return ()=>clearInterval(iv);
-  }, []);
-
-  const onTrade = (side, crypto, usd, qty) => {
+  }, []);const onTrade = (side, crypto, usd, qty) => {
     if(side==="buy") {
       setBalance(prev=>prev-usd);
       const idx = portfolio.findIndex(p=>p.id===crypto.id);
@@ -387,6 +386,7 @@ function LoginPage({ onAuth }) {
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
         <button onClick={onLogout} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>Sign Out</button>
       </div>
+
       <Ticker cryptos={prices}/>
 
       <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>
@@ -418,9 +418,7 @@ function LoginPage({ onAuth }) {
               </div>
             ))}
           </div>
-        )}
-
-        {tab==="portfolio"&&(
+        )}{tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
               {[
@@ -463,7 +461,9 @@ function LoginPage({ onAuth }) {
               );
             })}
           </div>
-        )}{tab==="history"&&(
+        )}
+
+        {tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Transaction History</div>
             {txHistory.length===0?(
@@ -526,9 +526,7 @@ function LoginPage({ onAuth }) {
             </button>
           </div>
         )}
-      </div>
-
-      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
+      </div><div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
         {navBtn("market","Market","📈")}
         {navBtn("portfolio","Portfolio","💼")}
         {navBtn("history","History","📋")}
@@ -542,9 +540,76 @@ function LoginPage({ onAuth }) {
   );
 }
 
+function AdminPage() {
+  const [pwd,setPwd]=useState("");
+  const [token,setToken]=useState(()=>sessionStorage.getItem("afm_admin_token")||"");
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+
+  const login = async() => {
+    setErr("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin-login", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pwd})});
+      const data = await res.json();
+      if(!res.ok) return setErr(data.error||"Wrong password");
+      sessionStorage.setItem("afm_admin_token", data.token);
+      setToken(data.token);
+      const usersRes = await fetch("/api/admin-users", {headers:{Authorization:`Bearer ${data.token}`}});
+      const usersData = await usersRes.json();
+      setUsers(usersData.users||[]);
+    } catch(e) {
+      setErr("Network error");
+    }
+    setLoading(false);
+  };
+
+  if(!token) {
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
+          <div style={{textAlign:"center",marginBottom:28}}>
+            <div style={{fontSize:40,marginBottom:12}}>🔐</div>
+            <div style={{fontWeight:800,fontSize:22,color:C.text}}>Admin Dashboard</div>
+          </div>
+          <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} onKeyPress={e=>e.key==="Enter"&&login()} placeholder="Admin password" style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"12px 16px",fontSize:14,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
+          <button onClick={login} disabled={loading} style={{width:"100%",background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:700,cursor:"pointer",fontSize:14,opacity:loading?0.6:1}}>
+            {loading?"Checking...":"Unlock"}
+          </button>
+          {err&&<div style={{color:C.red,fontSize:12,textAlign:"center",marginTop:8}}>{err}</div>}
+          <div style={{textAlign:"center",marginTop:16}}>
+            <a href="/" style={{color:C.accent,fontSize:12,textDecoration:"none"}}>← Back to platform</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
+      <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontWeight:800,fontSize:18,color:C.gold}}>⚙️ Admin Dashboard</div>
+        <button onClick={()=>{sessionStorage.removeItem("afm_admin_token");setToken("");}} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>Sign Out</button>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:20}}>
+        <div style={{fontWeight:700,fontSize:14,marginBottom:16}}>👥 Users ({users.length})</div>
+        {users.map(u=>(
+          <div key={u._id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{fontWeight:700,fontSize:14,color:C.text}}>{u.name}</div>
+            <div style={{fontSize:12,color:C.muted}}>{u.email}</div>
+            <div style={{fontSize:12,color:C.green,fontWeight:700,marginTop:4}}>${(u.balance||0).toLocaleString()}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const isAdmin = typeof window !== 'undefined' && window.location.pathname === "/admin";
 
   useEffect(() => {
     const token = localStorage.getItem("afm_token");
@@ -556,8 +621,9 @@ export default function App() {
       .finally(()=>setAuthChecked(true));
   }, []);
 
+  if(isAdmin) return <AdminPage/>;
   if(!authChecked) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted}}>Loading...</div>;
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-}
+                            }

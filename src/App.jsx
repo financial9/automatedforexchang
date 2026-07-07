@@ -81,7 +81,6 @@ function Ticker({ cryptos }) {
     </div>
   );
 }
-
 function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
@@ -95,7 +94,9 @@ function DepositModal({ onClose }) {
     { name: "USDT (ERC20)", addr: WALLETS.USDT, icon: "≈", color: "#26A17B" },
     { name: "Solana (SOL)", addr: WALLETS.SOL, icon: "◎", color: "#9945FF" },
     { name: "USDC (ERC20)", addr: WALLETS.USDC, icon: "U", color: "#2775CA" },
-  ];return (
+  ];
+
+  return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -177,9 +178,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
               {pct}%
             </button>
           ))}
-        </div>
-
-        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+        </div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:(holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0")}
           </span>
@@ -193,7 +192,9 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       </div>
     </div>
   );
-          }function LoginPage({ onAuth }) {
+}
+
+function LoginPage({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({name:"",email:"",password:"",confirm:""});
   const [err, setErr] = useState("");
@@ -250,8 +251,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       setErr("Network error");
     }
     setLoading(false);
-  };
-                                       return (
+  };return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       {/* Header */}
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -313,9 +313,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}
-
-function Dashboard({ user, setUser, onLogout }) {
+}function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -341,7 +339,9 @@ function Dashboard({ user, setUser, onLogout }) {
     fire();
     const iv = setInterval(fire, 5000);
     return ()=>clearInterval(iv);
-  }, []);useEffect(() => {
+  }, []);
+
+  useEffect(() => {
     const iv = setInterval(() => setPrices(prev=>prev.map(c=>({...c,price:+(c.price*(1+(Math.random()-.49)*.002)).toFixed(c.price<1?4:2)}))), 2000);
     return ()=>clearInterval(iv);
   }, []);
@@ -387,7 +387,6 @@ function Dashboard({ user, setUser, onLogout }) {
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
         <button onClick={onLogout} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>Sign Out</button>
       </div>
-
       <Ticker cryptos={prices}/>
 
       <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>
@@ -420,6 +419,7 @@ function Dashboard({ user, setUser, onLogout }) {
             ))}
           </div>
         )}
+
         {tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
@@ -463,9 +463,7 @@ function Dashboard({ user, setUser, onLogout }) {
               );
             })}
           </div>
-        )}
-
-        {tab==="history"&&(
+        )}{tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Transaction History</div>
             {txHistory.length===0?(
@@ -492,20 +490,6 @@ function Dashboard({ user, setUser, onLogout }) {
             ))}
           </div>
         )}
-
-        {tab==="account"&&(
-          <div style={{padding:14}}>
-            <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
-              <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
-                {user.name[0].toUpperCase()}
-              </div>
-              <div style={{fontWeight:800,fontSize:17}}>{user.name}</div>
-              <div style={{color:C.muted,fontSize:12,marginTop:2}}>{user.email}</div>
-              <div style={{marginTop:12,background:"#040A15",borderRadius:8,padding:"8px 18px",display:"inline-block"}}>
-                <div style={{fontSize:10,color:C.muted}}>Account Status</div>
-                <div style={{color:C.green,fontWeight:700,fontSize:12}}>✓ Verified</div>
-              </div>
-            </div>)}
 
         {tab==="account"&&(
           <div style={{padding:14}}>
@@ -576,4 +560,4 @@ export default function App() {
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-                      }
+}

@@ -49,9 +49,7 @@ function ToastStack({ toasts }) {
       ))}
     </div>
   );
-}
-
-function Ticker({ cryptos }) {
+}function Ticker({ cryptos }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -80,21 +78,21 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-  }function DepositModal({ onClose }) {
+}
+
+function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
     navigator.clipboard?.writeText(addr);
     setCopied(name);
     setTimeout(() => setCopied(null), 2000);
   };
-  
   const networks = [
     { name: "Bitcoin (BTC)", addr: WALLETS.BTC, icon: "₿", color: "#F7931A" },
     { name: "USDT (ERC20)", addr: WALLETS.USDT, icon: "≈", color: "#26A17B" },
     { name: "Solana (SOL)", addr: WALLETS.SOL, icon: "◎", color: "#9945FF" },
     { name: "USDC (ERC20)", addr: WALLETS.USDC, icon: "U", color: "#2775CA" },
   ];
-
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
@@ -103,7 +101,7 @@ function Ticker({ cryptos }) {
           <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
         </div>
         <div style={{background:"#0A1628",borderRadius:10,padding:"10px 14px",marginBottom:18,fontSize:12,color:C.muted,lineHeight:1.6}}>
-          Send your deposit to one of the addresses below. Balance updates after confirmation. Min: <span style={{color:C.accent}}>$50</span>
+          Send your deposit to one of the addresses below. Balance updates after confirmation.
         </div>
         {networks.map(n=>(
           <div key={n.name} style={{background:"#040A15",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
@@ -120,16 +118,14 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-}
-
-function TradeModal({ crypto, user, onClose, onTrade }) {
+      }
+            function TradeModal({ crypto, user, onClose, onTrade }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
   const usd = parseFloat(amount) || 0;
   const qty = usd / crypto.price;
   const holding = user.portfolio.find(p => p.id === crypto.id);
-
   const exec = () => {
     setMsg("");
     if(!usd || usd<=0) return setMsg("Enter valid amount.");
@@ -139,7 +135,6 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
     setMsg(side==="buy" ? `✓ Bought ${qty.toFixed(6)} ${crypto.id}` : `✓ Sold ${qty.toFixed(6)} ${crypto.id}`);
     setAmount("");
   };
-
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340}} onClick={e=>e.stopPropagation()}>
@@ -150,12 +145,10 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
           </div>
           <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
         </div>
-
         <div style={{background:"#040A15",borderRadius:8,padding:"10px 14px",marginBottom:14,display:"flex",justifyContent:"space-between"}}>
           <span style={{color:C.muted,fontSize:13}}>Market Price</span>
           <span style={{color:C.text,fontWeight:700,fontFamily:"monospace"}}>${crypto.price.toLocaleString()}</span>
         </div>
-
         <div style={{display:"flex",background:"#040A15",borderRadius:8,padding:4,marginBottom:14}}>
           {["buy","sell"].map(s=>(
             <button key={s} onClick={()=>setSide(s)} style={{flex:1,padding:"8px 0",borderRadius:6,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:side===s?(s==="buy"?"#0D2B1A":"#2B0A0A"):"transparent",color:side===s?(s==="buy"?C.green:C.red):C.muted}}>
@@ -163,14 +156,11 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
             </button>
           ))}
         </div>
-
         <div style={{position:"relative",marginBottom:8}}>
           <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted}}>$</span>
           <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00" style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px 10px 28px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
         </div>
-
         {usd>0&&<div style={{color:C.muted,fontSize:12,marginBottom:10,textAlign:"right"}}>≈ {qty.toFixed(6)} {crypto.id}</div>}
-
         <div style={{display:"flex",gap:6,marginBottom:12}}>
           {[25,50,75,100].map(pct=>(
             <button key={pct} onClick={()=>{const max=side==="buy"?user.balance:(holding?holding.qty*crypto.price:0);setAmount((max*pct/100).toFixed(2));}} style={{flex:1,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:6,color:C.subtext,fontSize:11,padding:"5px 0",cursor:"pointer"}}>
@@ -178,14 +168,12 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
             </button>
           ))}
         </div>
-      <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:(holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0")}
           </span>
         </div>
-
         {msg&&<div style={{marginBottom:12,fontSize:12,padding:"8px 12px",borderRadius:7,background:msg.startsWith("✓")?"#0D2B1A":"#2B0A0A",color:msg.startsWith("✓")?C.green:C.red}}>{msg}</div>}
-
         <button onClick={exec} style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,background:side==="buy"?`linear-gradient(135deg,#16a34a,#15803d)`:`linear-gradient(135deg,#dc2626,#b91c1c)`,color:"#fff"}}>
           {side==="buy"?"Buy":"Sell"} {crypto.id}
         </button>
@@ -226,9 +214,7 @@ function LoginPage({ onAuth }) {
     fire();
     const iv = setInterval(fire, 5000);
     return ()=>clearInterval(iv);
-  }, []);
-
-  const submit = async() => {
+  }, []);const submit = async() => {
     setErr("");
     if(!form.email||!form.password) return setErr("All fields required.");
     if(mode==="register") {
@@ -251,9 +237,10 @@ function LoginPage({ onAuth }) {
       setErr("Network error");
     }
     setLoading(false);
-  };return (
+  };
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
-      {/* Header */}
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff"}}>AF</div>
@@ -270,10 +257,7 @@ function LoginPage({ onAuth }) {
           <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>29, June 2026 / 09:17:12AM</span>
         </div>
       </div>
-
       <Ticker cryptos={CRYPTOS}/>
-
-      {/* Main Content */}
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
         <div style={{textAlign:"center",marginBottom:32,maxWidth:520}}>
           <div style={{fontSize:11,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Institutional-Grade Crypto Platform</div>
@@ -285,8 +269,6 @@ function LoginPage({ onAuth }) {
           </h2>
           <p style={{margin:0,color:C.subtext,fontSize:14}}>Trade crypto assets with confidence</p>
         </div>
-
-        {/* Auth Card */}
         <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:360}}>
           <div style={{display:"flex",background:"#040A15",borderRadius:10,padding:4,marginBottom:20}}>
             {["login","register"].map(m=>(
@@ -295,15 +277,12 @@ function LoginPage({ onAuth }) {
               </button>
             ))}
           </div>
-
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {mode==="register"&&<input placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
             <input placeholder="Email address" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
             <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
             {mode==="register"&&<input placeholder="Confirm password" type="password" value={form.confirm} onChange={e=>setForm(f=>({...f,confirm:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
-            
             {err&&<div style={{color:C.red,fontSize:12,background:"#2A0A0A",padding:"8px 12px",borderRadius:7}}>{err}</div>}
-            
             <button onClick={submit} disabled={loading} style={{background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:800,fontSize:14,cursor:"pointer",opacity:loading?0.6:1}}>
               {loading?"Please wait...":mode==="login"?"Sign In →":"Create Account →"}
             </button>
@@ -340,7 +319,8 @@ function AdminPage() {
     setLoading(false);
   };
 
-  if(!token) {return (
+  if(!token) {
+    return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
           <div style={{textAlign:"center",marginBottom:28}}>
@@ -378,9 +358,7 @@ function AdminPage() {
       </div>
     </div>
   );
-}
-
-function Dashboard({ user, setUser, onLogout }) {
+}function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -446,15 +424,15 @@ function Dashboard({ user, setUser, onLogout }) {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );return (
+  );
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
         <button onClick={onLogout} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>Sign Out</button>
       </div>
-
       <Ticker cryptos={prices}/>
-
       <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>
         {tab==="market"&&(
           <div style={{padding:14}}>
@@ -466,9 +444,7 @@ function Dashboard({ user, setUser, onLogout }) {
               </div>
               <span style={{color:C.accent,fontSize:18}}>›</span>
             </div>
-
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search coins..." style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"10px 14px",fontSize:13,outline:"none",marginBottom:12,boxSizing:"border-box"}}/>
-
             {filtered.map(c=>(
               <div key={c.id} onClick={()=>setTradeCrypto(c)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:12,cursor:"pointer",transition:"border-color .2s"}}>
                 <div style={{width:40,height:40,borderRadius:10,background:c.color+"22",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,color:c.color,fontWeight:700,flexShrink:0}}>{c.icon}</div>
@@ -485,7 +461,6 @@ function Dashboard({ user, setUser, onLogout }) {
             ))}
           </div>
         )}
-
         {tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
@@ -501,10 +476,10 @@ function Dashboard({ user, setUser, onLogout }) {
                 </div>
               ))}
             </div>
-
             <button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginBottom:14,padding:"12px 0",borderRadius:10,border:`1px solid ${C.accent}`,background:`${C.accent}11`,color:C.accent,fontWeight:700,fontSize:13,cursor:"pointer"}}>
               + Deposit Funds
-            </button><div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Holdings</div>
+            </button>
+            <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Holdings</div>
             {portfolio.length===0?(
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:28,textAlign:"center",color:C.muted}}>
                 <div style={{fontSize:28,marginBottom:8}}>📊</div>
@@ -527,9 +502,7 @@ function Dashboard({ user, setUser, onLogout }) {
               );
             })}
           </div>
-        )}
-
-        {tab==="history"&&(
+        )}{tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Transaction History</div>
             {txHistory.length===0?(
@@ -555,7 +528,8 @@ function Dashboard({ user, setUser, onLogout }) {
               </div>
             ))}
           </div>
-        )}{tab==="account"&&(
+        )}
+        {tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
               <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
@@ -568,7 +542,6 @@ function Dashboard({ user, setUser, onLogout }) {
                 <div style={{color:C.green,fontWeight:700,fontSize:12}}>✓ Verified</div>
               </div>
             </div>
-
             {[
               {label:"Total Portfolio Value",value:`$${totalVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
               {label:"Cash Balance",value:`$${balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`},
@@ -580,25 +553,21 @@ function Dashboard({ user, setUser, onLogout }) {
                 <span style={{fontWeight:700,fontSize:13}}>{row.value}</span>
               </div>
             ))}
-
             <button onClick={()=>setShowDeposit(true)} style={{width:"100%",marginTop:8,marginBottom:8,padding:"12px 0",borderRadius:10,border:"none",background:`linear-gradient(135deg,${C.accent},#0057FF)`,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer"}}>
               💳 Deposit Funds
             </button>
-
             <button onClick={onLogout} style={{width:"100%",padding:"11px 0",borderRadius:10,border:`1px solid ${C.border}`,background:"transparent",color:C.red,fontWeight:700,fontSize:13,cursor:"pointer"}}>
               Sign Out
             </button>
           </div>
         )}
       </div>
-
       <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
         {navBtn("market","Market","📈")}
         {navBtn("portfolio","Portfolio","💼")}
         {navBtn("history","History","📋")}
         {navBtn("account","Account","👤")}
       </div>
-
       <ToastStack toasts={toasts}/>
       {tradeCrypto&&<TradeModal crypto={tradeCrypto} user={{balance,portfolio}} onClose={()=>setTradeCrypto(null)} onTrade={onTrade}/>}
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
@@ -622,8 +591,8 @@ export default function App() {
   }, []);
 
   if(isAdmin) return <AdminPage/>;
-  if(!authChecked) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted}}>Loading...</div>;
+  if(!authChecked) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontFamily:"'Inter',system-ui,sans-serif"}}>Loading...</div>;
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-                                                               }
+        }

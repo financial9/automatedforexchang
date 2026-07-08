@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
+// v2.0 - Complete broker with admin panel
 const C = {
   bg: "#050B18", surface: "#0C1526", card: "#111E35", border: "#1A2D4A",
   accent: "#00C6FF", gold: "#F4C430", green: "#00E676", red: "#FF4B4B",
@@ -49,7 +50,9 @@ function ToastStack({ toasts }) {
       ))}
     </div>
   );
-}function Ticker({ cryptos }) {
+}
+
+function Ticker({ cryptos }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -78,9 +81,7 @@ function ToastStack({ toasts }) {
       </div>
     </div>
   );
-}
-
-function DepositModal({ onClose }) {
+          }function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
     navigator.clipboard?.writeText(addr);
@@ -118,8 +119,9 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-      }
-            function TradeModal({ crypto, user, onClose, onTrade }) {
+}
+
+function TradeModal({ crypto, user, onClose, onTrade }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -166,8 +168,7 @@ function DepositModal({ onClose }) {
             <button key={pct} onClick={()=>{const max=side==="buy"?user.balance:(holding?holding.qty*crypto.price:0);setAmount((max*pct/100).toFixed(2));}} style={{flex:1,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:6,color:C.subtext,fontSize:11,padding:"5px 0",cursor:"pointer"}}>
               {pct}%
             </button>
-          ))}
-        </div>
+          ))}</div>
         <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
           Available: <span style={{color:C.text}}>
             {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:(holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0")}
@@ -214,7 +215,9 @@ function LoginPage({ onAuth }) {
     fire();
     const iv = setInterval(fire, 5000);
     return ()=>clearInterval(iv);
-  }, []);const submit = async() => {
+  }, []);
+
+  const submit = async() => {
     setErr("");
     if(!form.email||!form.password) return setErr("All fields required.");
     if(mode==="register") {
@@ -276,8 +279,7 @@ function LoginPage({ onAuth }) {
                 {m==="login"?"Sign In":"Create Account"}
               </button>
             ))}
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          </div><div style={{display:"flex",flexDirection:"column",gap:10}}>
             {mode==="register"&&<input placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
             <input placeholder="Email address" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
             <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
@@ -338,9 +340,8 @@ function AdminPage() {
         </div>
       </div>
     );
-  }
-
-  return (
+}
+      return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{fontWeight:800,fontSize:18,color:C.gold}}>⚙️ Admin Dashboard</div>
@@ -358,7 +359,9 @@ function AdminPage() {
       </div>
     </div>
   );
-}function Dashboard({ user, setUser, onLogout }) {
+}
+
+function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -424,9 +427,7 @@ function AdminPage() {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );
-
-  return (
+  );return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
@@ -502,7 +503,8 @@ function AdminPage() {
               );
             })}
           </div>
-        )}{tab==="history"&&(
+        )}
+        {tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:.5}}>Transaction History</div>
             {txHistory.length===0?(
@@ -528,8 +530,7 @@ function AdminPage() {
               </div>
             ))}
           </div>
-        )}
-        {tab==="account"&&(
+        )}{tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
               <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
@@ -583,11 +584,20 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem("afm_token");
     if(!token) return setAuthChecked(true);
-    fetch("/api/me", {headers:{Authorization:`Bearer ${token}`}})
-      .then(r=>r.ok?r.json():Promise.reject())
-      .then(data=>setUser(data.user))
-      .catch(()=>localStorage.removeItem("afm_token"))
-      .finally(()=>setAuthChecked(true));
+    try {
+      fetch("/api/me", {headers:{Authorization:`Bearer ${token}`}})
+        .then(r=>r.ok?r.json():Promise.reject())
+        .then(data=>{
+          if(data && data.user) setUser(data.user);
+          setAuthChecked(true);
+        })
+        .catch(()=>{
+          localStorage.removeItem("afm_token");
+          setAuthChecked(true);
+        });
+    } catch(e) {
+      setAuthChecked(true);
+    }
   }, []);
 
   if(isAdmin) return <AdminPage/>;
@@ -595,4 +605,4 @@ export default function App() {
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-        }
+}

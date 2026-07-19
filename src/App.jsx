@@ -6,7 +6,7 @@ const C = {
   muted: "#4A6080", text: "#D6E8FF", subtext: "#7090B0",
 };
 
-const API_URL = "https://automatedforexchang-production.up.railway.app";
+const API_URL = "https://automatedforexchang-backend-production.up.railway.app";
 
 const CRYPTOS = [
   { id:"BTC", name:"Bitcoin", price:67843.21, change: 2.34, icon:"₿", color:"#F7931A" },
@@ -82,9 +82,7 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-}
-
-function DepositModal({ onClose }) {
+                                       }function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
     navigator.clipboard?.writeText(addr);
@@ -119,7 +117,9 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-    }function TradeModal({ crypto, user, onClose, onTrade }) {
+}
+
+function TradeModal({ crypto, user, onClose, onTrade }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -180,9 +180,7 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-}
-
-function LoginPage({ onAuth }) {
+}function LoginPage({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({name:"",email:"",password:"",confirm:""});
   const [err, setErr] = useState("");
@@ -239,7 +237,9 @@ function LoginPage({ onAuth }) {
       setErr("Network error - backend may be starting up");
     }
     setLoading(false);
-  };return (
+  };
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -292,9 +292,7 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}
-
-function Dashboard({ user, setUser, onLogout }) {
+                                                                                                                                     }function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -360,7 +358,9 @@ function Dashboard({ user, setUser, onLogout }) {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );return (
+  );
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
@@ -394,8 +394,7 @@ function Dashboard({ user, setUser, onLogout }) {
               </div>
             ))}
           </div>
-        )}
-        {tab==="portfolio"&&(
+        )}{tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
               {[
@@ -537,4 +536,4 @@ export default function App() {
   if(!user) return <LoginPage onAuth={setUser}/>;
 
   return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-        }
+}

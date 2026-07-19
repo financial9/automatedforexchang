@@ -82,7 +82,9 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-                                       }function DepositModal({ onClose }) {
+}
+
+function DepositModal({ onClose }) {
   const [copied, setCopied] = useState(null);
   const copy = (addr, name) => {
     navigator.clipboard?.writeText(addr);
@@ -117,9 +119,7 @@ function Ticker({ cryptos }) {
       </div>
     </div>
   );
-}
-
-function TradeModal({ crypto, user, onClose, onTrade }) {
+      }function TradeModal({ crypto, user, onClose, onTrade }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -180,7 +180,9 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       </div>
     </div>
   );
-}function LoginPage({ onAuth }) {
+}
+
+function LoginPage({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({name:"",email:"",password:"",confirm:""});
   const [err, setErr] = useState("");
@@ -237,9 +239,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       setErr("Network error - backend may be starting up");
     }
     setLoading(false);
-  };
-
-  return (
+  };return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -292,7 +292,9 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-                                                                                                                                     }function Dashboard({ user, setUser, onLogout }) {
+}
+
+function Dashboard({ user, setUser, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -358,9 +360,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );
-
-  return (
+  );return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
@@ -394,7 +394,8 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
               </div>
             ))}
           </div>
-        )}{tab==="portfolio"&&(
+        )}
+        {tab==="portfolio"&&(
           <div style={{padding:14}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
               {[
@@ -462,8 +463,7 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
               </div>
             ))}
           </div>
-        )}
-        {tab==="account"&&(
+        )}{tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
               <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
@@ -495,7 +495,8 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
             </button>
           </div>
         )}
-      </div><div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
+      </div>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
         {navBtn("market","Market","📈")}
         {navBtn("portfolio","Portfolio","💼")}
         {navBtn("history","History","📋")}
@@ -508,7 +509,71 @@ function TradeModal({ crypto, user, onClose, onTrade }) {
   );
 }
 
-export default function App() {
+function AdminPage() {
+  const [pwd,setPwd]=useState("");
+  const [token,setToken]=useState(()=>sessionStorage.getItem("afm_admin_token")||"");
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+
+  const login = async() => {
+    setErr("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin-login`, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password:pwd})});
+      const data = await res.json();
+      if(!res.ok) return setErr(data.error||"Wrong password");
+      sessionStorage.setItem("afm_admin_token", data.token);
+      setToken(data.token);
+      const usersRes = await fetch(`${API_URL}/api/admin-users`, {headers:{Authorization:`Bearer ${data.token}`}});
+      const usersData = await usersRes.json();
+      setUsers(usersData.users||[]);
+    } catch(e) {
+      setErr("Network error");
+    }
+    setLoading(false);
+  };
+
+  if(!token) {
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+        <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
+          <div style={{textAlign:"center",marginBottom:28}}>
+            <div style={{fontSize:40,marginBottom:12}}>🔐</div>
+            <div style={{fontWeight:800,fontSize:22,color:C.text}}>Admin Dashboard</div>
+          </div>
+          <input type="password" value={pwd} onChange={e=>setPwd(e.target.value)} onKeyPress={e=>e.key==="Enter"&&login()} placeholder="Admin password" style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:10,color:C.text,padding:"12px 16px",fontSize:14,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
+          <button onClick={login} disabled={loading} style={{width:"100%",background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:700,cursor:"pointer",fontSize:14,opacity:loading?0.6:1}}>
+            {loading?"Checking...":"Unlock"}
+          </button>
+          {err&&<div style={{color:C.red,fontSize:12,textAlign:"center",marginTop:8}}>{err}</div>}
+          <div style={{textAlign:"center",marginTop:16}}>
+            <a href="/" style={{color:C.accent,fontSize:12,textDecoration:"none"}}>← Back to platform</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
+      <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontWeight:800,fontSize:18,color:C.gold}}>⚙️ Admin Dashboard</div>
+        <button onClick={()=>{sessionStorage.removeItem("afm_admin_token");setToken("");}} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>Sign Out</button>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:20}}>
+        <div style={{fontWeight:700,fontSize:14,marginBottom:16}}>👥 Users ({users.length})</div>
+        {users.map(u=>(
+          <div key={u._id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{fontWeight:700,fontSize:14,color:C.text}}>{u.name}</div>
+            <div style={{fontSize:12,color:C.muted}}>{u.email}</div>
+            <div style={{fontSize:12,color:C.green,fontWeight:700,marginTop:4}}>${(u.balance||0).toLocaleString()}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}export default function App() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const isAdmin = typeof window !== 'undefined' && window.location.pathname === "/admin";
@@ -531,6 +596,9 @@ export default function App() {
       setAuthChecked(true);
     }
   }, []);
+
+  // Show admin panel first (no login needed)
+  if(isAdmin) return <AdminPage/>;
 
   if(!authChecked) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontFamily:"'Inter',system-ui,sans-serif"}}>Loading...</div>;
   if(!user) return <LoginPage onAuth={setUser}/>;

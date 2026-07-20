@@ -129,7 +129,9 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-    }function TradeModal({ crypto, user, onClose, onTrade, token }) {
+}
+
+function TradeModal({ crypto, user, onClose, onTrade, token }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -161,9 +163,7 @@ function DepositModal({ onClose }) {
       setMsg("Network error");
     }
     setLoading(false);
-  };
-  
-  return (
+  };return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -304,7 +304,7 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-                                                          }function Dashboard({ user, setUser, token, onLogout }) {
+}function Dashboard({ user, setUser, token, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -315,6 +315,13 @@ function LoginPage({ onAuth }) {
   const [tradeCrypto, setTradeCrypto] = useState(null);
   const [showDeposit, setShowDeposit] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [notifications, setNotifications] = useState(user.notifications || []);
+  const [messages, setMessages] = useState([]);
+  const [selectedUserMsg, setSelectedUserMsg] = useState(null);
+  const [messageText, setMessageText] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
 
   useEffect(() => {
     const types = ["bought","sold"];
@@ -376,7 +383,14 @@ function LoginPage({ onAuth }) {
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
-        <button onClick={onLogout} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>Sign Out</button>
+        <div style={{display:"flex",gap:12,alignItems:"center"}}>
+          <button onClick={()=>setShowNotifications(true)} style={{position:"relative",background:"none",border:"none",cursor:"pointer",fontSize:18}}>
+            🔔
+            {notifications.length>0&&<span style={{position:"absolute",top:-4,right:-4,background:C.red,color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{notifications.length}</span>}
+          </button>
+          <button onClick={()=>setShowMessages(true)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18}}>💬</button>
+          <button onClick={onLogout} style={{background:"none",border:"none",color:C.red,cursor:"pointer",fontSize:12}}>Sign Out</button>
+        </div>
       </div>
       <Ticker cryptos={prices}/>
       <div style={{flex:1,overflowY:"auto",paddingBottom:80}}>
@@ -475,6 +489,15 @@ function LoginPage({ onAuth }) {
             ))}
           </div>
         )}
+        {tab==="messages"&&(
+          <div style={{padding:14}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💬 Messages</div>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",textAlign:"center",color:C.muted}}>
+              <div style={{fontSize:12}}>Messages feature coming soon!</div>
+              <div style={{fontSize:11,marginTop:8}}>Send and receive messages from other users</div>
+            </div>
+          </div>
+        )}
         {tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
@@ -517,6 +540,40 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
       {tradeCrypto&&<TradeModal crypto={tradeCrypto} user={{balance,portfolio}} onClose={()=>setTradeCrypto(null)} onTrade={onTrade} token={token}/>}
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
+      {showNotifications&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={()=>setShowNotifications(false)}>
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:380,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+              <div style={{fontWeight:800,fontSize:16}}>🔔 Notifications ({notifications.length})</div>
+              <button onClick={()=>setShowNotifications(false)} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            {notifications.length===0?(
+              <div style={{textAlign:"center",color:C.muted,padding:"20px 0"}}>No notifications yet</div>
+            ):notifications.slice().reverse().map((n,i)=>(
+              <div key={i} style={{background:"#040A15",border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",marginBottom:10}}>
+                <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                  <span style={{fontSize:18}}>{n.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,color:C.text}}>{n.message}</div>
+                    <div style={{fontSize:10,color:C.muted,marginTop:4}}>{new Date(n.time).toLocaleTimeString()}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {showMessages&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={()=>setShowMessages(false)}>
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:380,maxHeight:"80vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+              <div style={{fontWeight:800,fontSize:16}}>💬 Messages</div>
+              <button onClick={()=>setShowMessages(false)} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{textAlign:"center",color:C.muted,padding:"20px 0",fontSize:12}}>Messages feature coming soon</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -569,9 +626,7 @@ function AdminPage() {
     } catch(e) {
       setAddErr("Network error");
     }
-  };
-
-  if(!token) {
+  };if(!token) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
@@ -590,7 +645,9 @@ function AdminPage() {
         </div>
       </div>
     );
-                }if(selectedUser) {
+  }
+
+  if(selectedUser) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
         <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -670,4 +727,4 @@ export default function App() {
   if(!user) return <LoginPage onAuth={(u)=>{setUser(u);const t=localStorage.getItem("afm_token");setToken(t);}}/>;
 
   return <Dashboard user={user} setUser={setUser} token={token} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);setToken(null);}} />;
-        }
+                       }

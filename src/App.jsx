@@ -119,22 +119,40 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-      }function TradeModal({ crypto, user, onClose, onTrade }) {
+                                }function TradeModal({ crypto, user, onClose, onTrade, token }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
   const usd = parseFloat(amount) || 0;
   const qty = usd / crypto.price;
   const holding = user.portfolio.find(p => p.id === crypto.id);
-  const exec = () => {
+  
+  const exec = async() => {
     setMsg("");
     if(!usd || usd<=0) return setMsg("Enter valid amount.");
     if(side==="buy" && usd>user.balance) return setMsg("Insufficient balance.");
     if(side==="sell" && (!holding || holding.qty*crypto.price<usd)) return setMsg("Insufficient holdings.");
-    onTrade(side, crypto, usd, qty);
-    setMsg(side==="buy" ? `✓ Bought ${qty.toFixed(6)} ${crypto.id}` : `✓ Sold ${qty.toFixed(6)} ${crypto.id}`);
-    setAmount("");
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/trade`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json", "Authorization":`Bearer ${token}`},
+        body: JSON.stringify({side, coinId: crypto.id, coinName: crypto.name, quantity: qty, price: crypto.price})
+      });
+      const data = await res.json();
+      if(!res.ok) return setMsg(data.error||"Trade failed");
+      
+      onTrade(side, crypto, usd, qty);
+      setMsg(side==="buy" ? `✓ Bought ${qty.toFixed(6)} ${crypto.id}` : `✓ Sold ${qty.toFixed(6)} ${crypto.id}`);
+      setAmount("");
+    } catch(e) {
+      setMsg("Network error");
+    }
+    setLoading(false);
   };
+  
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340}} onClick={e=>e.stopPropagation()}>
@@ -174,8 +192,8 @@ function DepositModal({ onClose }) {
           </span>
         </div>
         {msg&&<div style={{marginBottom:12,fontSize:12,padding:"8px 12px",borderRadius:7,background:msg.startsWith("✓")?"#0D2B1A":"#2B0A0A",color:msg.startsWith("✓")?C.green:C.red}}>{msg}</div>}
-        <button onClick={exec} style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,background:side==="buy"?`linear-gradient(135deg,#16a34a,#15803d)`:`linear-gradient(135deg,#dc2626,#b91c1c)`,color:"#fff"}}>
-          {side==="buy"?"Buy":"Sell"} {crypto.id}
+        <button onClick={exec} disabled={loading} style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,background:side==="buy"?`linear-gradient(135deg,#16a34a,#15803d)`:`linear-gradient(135deg,#dc2626,#b91c1c)`,color:"#fff",opacity:loading?0.6:1}}>
+          {loading?"Processing...":side==="buy"?"Buy":"Sell"} {crypto.id}
         </button>
       </div>
     </div>
@@ -190,12 +208,7 @@ function LoginPage({ onAuth }) {
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
-    const events = [
-      {type:"deposit", icon:"💰"},
-      {type:"withdraw", icon:"🏆"},
-      {type:"register", icon:"✅"},
-      {type:"bought", icon:"📈"}
-    ];
+    const events = [{type:"deposit", icon:"💰"},{type:"withdraw", icon:"🏆"},{type:"register", icon:"✅"},{type:"bought", icon:"📈"}];
     const fire = () => {
       const event = randItem(events);
       const coin = randItem(CRYPTOS);
@@ -236,21 +249,17 @@ function LoginPage({ onAuth }) {
       localStorage.setItem("afm_token", data.token);
       onAuth(data.user);
     } catch(e) {
-      setErr("Network error - backend may be starting up");
+      setErr("Network error");
     }
     setLoading(false);
-  };return (
+  };
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff"}}>AF</div>
-          <div>
-            <div style={{fontWeight:800,fontSize:13,letterSpacing:-0.3}}>
-              <span style={{color:C.accent}}>Automated</span>
-              <span style={{color:C.text}}> Financial</span>
-            </div>
-            <div style={{fontSize:8,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div>
-          </div>
+          <div><div style={{fontWeight:800,fontSize:13,letterSpacing:-0.3}}><span style={{color:C.accent}}>Automated</span><span style={{color:C.text}}> Financial</span></div><div style={{fontSize:8,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div></div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`2px solid ${C.accent}`,borderRadius:10,padding:"6px 12px"}}>
           <span style={{fontSize:12}}>🕐</span>
@@ -261,12 +270,8 @@ function LoginPage({ onAuth }) {
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
         <div style={{textAlign:"center",marginBottom:32,maxWidth:520}}>
           <div style={{fontSize:11,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Institutional-Grade Crypto Platform</div>
-          <h1 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,marginBottom:8}}>
-            Grow Your Future
-          </h1>
-          <h2 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>
-            Through Technology
-          </h2>
+          <h1 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,marginBottom:8}}>Grow Your Future</h1>
+          <h2 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Through Technology</h2>
           <p style={{margin:0,color:C.subtext,fontSize:14}}>Trade crypto assets with confidence</p>
         </div>
         <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:360}}>
@@ -292,15 +297,13 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}
-
-function Dashboard({ user, setUser, onLogout }) {
+      }function Dashboard({ user, setUser, token, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
   const [portfolio, setPortfolio] = useState(user.portfolio || []);
   const [balance, setBalance] = useState(user.balance || 0);
-  const [txHistory, setTxHistory] = useState([]);
+  const [txHistory, setTxHistory] = useState(user.history || []);
   const [search, setSearch] = useState("");
   const [tradeCrypto, setTradeCrypto] = useState(null);
   const [showDeposit, setShowDeposit] = useState(false);
@@ -360,7 +363,9 @@ function Dashboard({ user, setUser, onLogout }) {
     <button onClick={()=>setTab(id)} style={{flex:1,padding:"10px 0",border:"none",cursor:"pointer",fontSize:11,fontWeight:600,background:tab===id?"#0C1526":"transparent",color:tab===id?C.accent:C.muted,borderTop:tab===id?`2px solid ${C.accent}`:"2px solid transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
       <span style={{fontSize:16}}>{icon}</span>{label}
     </button>
-  );return (
+  );
+
+  return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontWeight:800,fontSize:14}}>📈 Automated Financial</div>
@@ -436,8 +441,7 @@ function Dashboard({ user, setUser, onLogout }) {
               );
             })}
           </div>
-        )}
-        {tab==="history"&&(
+        )}{tab==="history"&&(
           <div style={{padding:14}}>
             <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10}}>Transaction History</div>
             {txHistory.length===0?(
@@ -463,7 +467,8 @@ function Dashboard({ user, setUser, onLogout }) {
               </div>
             ))}
           </div>
-        )}{tab==="account"&&(
+        )}
+        {tab==="account"&&(
           <div style={{padding:14}}>
             <div style={{background:`linear-gradient(135deg,#0C2040,#0A1A30)`,border:`1px solid ${C.border}`,borderRadius:16,padding:22,marginBottom:14,textAlign:"center"}}>
               <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,margin:"0 auto 10px"}}>
@@ -503,7 +508,7 @@ function Dashboard({ user, setUser, onLogout }) {
         {navBtn("account","Account","👤")}
       </div>
       <ToastStack toasts={toasts}/>
-      {tradeCrypto&&<TradeModal crypto={tradeCrypto} user={{balance,portfolio}} onClose={()=>setTradeCrypto(null)} onTrade={onTrade}/>}
+      {tradeCrypto&&<TradeModal crypto={tradeCrypto} user={{balance,portfolio}} onClose={()=>setTradeCrypto(null)} onTrade={onTrade} token={token}/>}
       {showDeposit&&<DepositModal onClose={()=>setShowDeposit(false)}/>}
     </div>
   );
@@ -515,6 +520,9 @@ function AdminPage() {
   const [users,setUsers]=useState([]);
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [addAmount, setAddAmount] = useState("");
+  const [addErr, setAddErr] = useState("");
 
   const login = async() => {
     setErr("");
@@ -534,7 +542,27 @@ function AdminPage() {
     setLoading(false);
   };
 
-  if(!token) {
+  const addBalance = async() => {
+    setAddErr("");
+    const amount = parseFloat(addAmount);
+    if(!amount || amount<=0) return setAddErr("Enter valid amount");
+    
+    try {
+      const res = await fetch(`${API_URL}/api/admin-add-balance`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json", "Authorization":`Bearer ${token}`},
+        body:JSON.stringify({email: selectedUser.email, amount})
+      });
+      const data = await res.json();
+      if(!res.ok) return setAddErr(data.error||"Failed");
+      
+      setUsers(users.map(u=>u.email===selectedUser.email?{...u,balance:u.balance+amount}:u));
+      setSelectedUser({...selectedUser, balance: selectedUser.balance+amount});
+      setAddAmount("");
+    } catch(e) {
+      setAddErr("Network error");
+    }
+  };if(!token) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
@@ -555,6 +583,33 @@ function AdminPage() {
     );
   }
 
+  if(selectedUser) {
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
+        <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <button onClick={()=>setSelectedUser(null)} style={{background:"none",border:"none",color:C.accent,cursor:"pointer",fontSize:14}}>← Back</button>
+          <button onClick={()=>{sessionStorage.removeItem("afm_admin_token");setToken("");}} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,color:C.muted,padding:"8px 14px",fontSize:12,cursor:"pointer"}}>Sign Out</button>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:20}}>
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:20,marginBottom:20}}>
+            <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>{selectedUser.name}</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:12}}>{selectedUser.email}</div>
+            <div style={{fontSize:14,color:C.green,fontWeight:700}}>Balance: ${(selectedUser.balance||0).toLocaleString()}</div>
+          </div>
+
+          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:20}}>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💰 Add Balance</div>
+            <input type="number" value={addAmount} onChange={e=>setAddAmount(e.target.value)} placeholder="Amount ($)" style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",marginBottom:10,boxSizing:"border-box"}}/>
+            {addErr&&<div style={{color:C.red,fontSize:12,marginBottom:10,background:"#2A0A0A",padding:"8px 12px",borderRadius:7}}>{addErr}</div>}
+            <button onClick={addBalance} style={{width:"100%",background:C.green,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:700,cursor:"pointer",fontSize:14}}>
+              Add Balance
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
       <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -564,7 +619,7 @@ function AdminPage() {
       <div style={{flex:1,overflowY:"auto",padding:20}}>
         <div style={{fontWeight:700,fontSize:14,marginBottom:16}}>👥 Users ({users.length})</div>
         {users.map(u=>(
-          <div key={u._id} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+          <div key={u._id} onClick={()=>setSelectedUser(u)} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10,cursor:"pointer"}}>
             <div style={{fontWeight:700,fontSize:14,color:C.text}}>{u.name}</div>
             <div style={{fontSize:12,color:C.muted}}>{u.email}</div>
             <div style={{fontSize:12,color:C.green,fontWeight:700,marginTop:4}}>${(u.balance||0).toLocaleString()}</div>
@@ -573,9 +628,12 @@ function AdminPage() {
       </div>
     </div>
   );
-}export default function App() {
+}
+
+export default function App() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [token, setToken] = useState(null);
   const isAdmin = typeof window !== 'undefined' && window.location.pathname === "/admin";
 
   useEffect(() => {
@@ -585,7 +643,10 @@ function AdminPage() {
       fetch(`${API_URL}/api/me`, {headers:{Authorization:`Bearer ${token}`}})
         .then(r=>r.ok?r.json():Promise.reject())
         .then(data=>{
-          if(data && data.user) setUser(data.user);
+          if(data && data.user) {
+            setUser(data.user);
+            setToken(token);
+          }
           setAuthChecked(true);
         })
         .catch(()=>{
@@ -597,11 +658,9 @@ function AdminPage() {
     }
   }, []);
 
-  // Show admin panel first (no login needed)
   if(isAdmin) return <AdminPage/>;
-
   if(!authChecked) return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",color:C.muted,fontFamily:"'Inter',system-ui,sans-serif"}}>Loading...</div>;
-  if(!user) return <LoginPage onAuth={setUser}/>;
+  if(!user) return <LoginPage onAuth={(u)=>{setUser(u);const t=localStorage.getItem("afm_token");setToken(t);}}/>;
 
-  return <Dashboard user={user} setUser={setUser} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);}} />;
-}
+  return <Dashboard user={user} setUser={setUser} token={token} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);setToken(null);}} />;
+    }

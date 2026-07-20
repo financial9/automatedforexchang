@@ -33,6 +33,16 @@ const COUNTRIES = ["🇺🇸","🇬🇧","🇳🇬","🇨🇦","🇦🇺","🇩�
 const randItem = arr => arr[Math.floor(Math.random() * arr.length)];
 const genChart = (base, n=20) => { let v=base, d=[]; for(let i=0;i<n;i++){v=v*(1+(Math.random()-0.48)*0.03);d.push(+v.toFixed(2));} return d; };
 
+function Clock() {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const iv = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(iv);
+  }, []);
+  const formatted = time.toLocaleString('en-US', {month:'short', day:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true});
+  return <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`2px solid ${C.accent}`,borderRadius:10,padding:"6px 12px"}}><span style={{fontSize:12}}>🕐</span><span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>{formatted}</span></div>;
+}
+
 function Sparkline({ data, up }) {
   const w=80, h=32;
   const min=Math.min(...data), max=Math.max(...data), range=max-min||1;
@@ -119,7 +129,7 @@ function DepositModal({ onClose }) {
       </div>
     </div>
   );
-                                }function TradeModal({ crypto, user, onClose, onTrade, token }) {
+    }function TradeModal({ crypto, user, onClose, onTrade, token }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
   const [msg, setMsg] = useState("");
@@ -261,10 +271,7 @@ function LoginPage({ onAuth }) {
           <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff"}}>AF</div>
           <div><div style={{fontWeight:800,fontSize:13,letterSpacing:-0.3}}><span style={{color:C.accent}}>Automated</span><span style={{color:C.text}}> Financial</span></div><div style={{fontSize:8,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div></div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6,background:"#0A1628",border:`2px solid ${C.accent}`,borderRadius:10,padding:"6px 12px"}}>
-          <span style={{fontSize:12}}>🕐</span>
-          <span style={{fontSize:10,color:C.gold,fontFamily:"monospace"}}>29, June 2026 / 09:17:12AM</span>
-        </div>
+        <Clock/>
       </div>
       <Ticker cryptos={CRYPTOS}/>
       <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
@@ -297,7 +304,7 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-      }function Dashboard({ user, setUser, token, onLogout }) {
+                                                          }function Dashboard({ user, setUser, token, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -562,7 +569,9 @@ function AdminPage() {
     } catch(e) {
       setAddErr("Network error");
     }
-  };if(!token) {
+  };
+
+  if(!token) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
@@ -581,9 +590,7 @@ function AdminPage() {
         </div>
       </div>
     );
-  }
-
-  if(selectedUser) {
+                }if(selectedUser) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
         <div style={{background:C.card,borderBottom:`1px solid ${C.gold}`,padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -663,4 +670,4 @@ export default function App() {
   if(!user) return <LoginPage onAuth={(u)=>{setUser(u);const t=localStorage.getItem("afm_token");setToken(t);}}/>;
 
   return <Dashboard user={user} setUser={setUser} token={token} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);setToken(null);}} />;
-    }
+        }

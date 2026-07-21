@@ -130,7 +130,6 @@ function DepositModal({ onClose }) {
     </div>
   );
 }
-
 function TradeModal({ crypto, user, onClose, onTrade, token }) {
   const [side, setSide] = useState("buy");
   const [amount, setAmount] = useState("");
@@ -163,7 +162,185 @@ function TradeModal({ crypto, user, onClose, onTrade, token }) {
       setMsg("Network error");
     }
     setLoading(false);
-  };return (
+  };
+  
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24,background:crypto.color+"22",borderRadius:8,padding:"4px 10px",color:crypto.color}}>{crypto.icon}</span>
+            <div><div style={{fontWeight:700}}>{crypto.name}</div><div style={{fontSize:12,color:C.muted}}>{crypto.id}</div></div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
+        </div>
+        <div style={{background:"#040A15",borderRadius:8,padding:"10px 14px",marginBottom:14,display:"flex",justifyContent:"space-between"}}>
+          <span style={{color:C.muted,fontSize:13}}>Market Price</span>
+          <span style={{color:C.text,fontWeight:700,fontFamily:"monospace"}}>${crypto.price.toLocaleString()}</span>
+        </div>
+        <div style={{display:"flex",background:"#040A15",borderRadius:8,padding:4,marginBottom:14}}>
+          {["buy","sell"].map(s=>(
+            <button key={s} onClick={()=>setSide(s)} style={{flex:1,padding:"8px 0",borderRadius:6,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:side===s?(s==="buy"?"#0D2B1A":"#2B0A0A"):"transparent",color:side===s?(s==="buy"?C.green:C.red):C.muted}}>
+              {s.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div style={{position:"relative",marginBottom:8}}>
+          <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",color:C.muted}}>$</span>
+          <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00" style={{width:"100%",background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"10px 14px 10px 28px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+        </div>
+        {usd>0&&<div style={{color:C.muted,fontSize:12,marginBottom:10,textAlign:"right"}}>≈ {qty.toFixed(6)} {crypto.id}</div>}
+        <div style={{display:"flex",gap:6,marginBottom:12}}>
+          {[25,50,75,100].map(pct=>(
+            <button key={pct} onClick={()=>{const max=side==="buy"?user.balance:(holding?holding.qty*crypto.price:0);setAmount((max*pct/100).toFixed(2));}} style={{flex:1,background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:6,color:C.subtext,fontSize:11,padding:"5px 0",cursor:"pointer"}}>
+              {pct}%
+            </button>
+          ))}
+        </div>
+        <div style={{color:C.muted,fontSize:12,marginBottom:12}}>
+          Available: <span style={{color:C.text}}>
+            {side==="buy"?`$${user.balance.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:(holding?`${holding.qty.toFixed(6)} ${crypto.id}`:"0")}
+          </span>
+        </div>
+        {msg&&<div style={{marginBottom:12,fontSize:12,padding:"8px 12px",borderRadius:7,background:msg.startsWith("✓")?"#0D2B1A":"#2B0A0A",color:msg.startsWith("✓")?C.green:C.red}}>{msg}</div>}
+        <button onClick={exec} disabled={loading} style={{width:"100%",padding:"12px 0",borderRadius:10,border:"none",cursor:"pointer",fontWeight:800,fontSize:14,background:side==="buy"?`linear-gradient(135deg,#16a34a,#15803d)`:`linear-gradient(135deg,#dc2626,#b91c1c)`,color:"#fff",opacity:loading?0.6:1}}>
+          {loading?"Processing...":side==="buy"?"Buy":"Sell"} {crypto.id}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LoginPage({ onAuth }) {
+  const [mode, setMode] = useState("login");
+  const [form, setForm] = useState({name:"",email:"",password:"",confirm:""});
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    const events = [{type:"deposit", icon:"💰"},{type:"withdraw", icon:"🏆"},{type:"register", icon:"✅"},{type:"bought", icon:"📈"}];
+    const fire = () => {
+      const event = randItem(events);
+      const coin = randItem(CRYPTOS);
+      const name = randItem(FAKE_NAMES);
+      const amount = randItem(FAKE_AMOUNTS);
+      const flag = randItem(COUNTRIES);
+      let text = "";
+      if(event.type==="deposit") text = `${flag} ${name} deposited $${amount.toLocaleString()}`;
+      else if(event.type==="withdraw") text = `${flag} ${name} withdrew $${amount.toLocaleString()} profit`;
+      else if(event.type==="register") text = `${flag} ${name} registered with $${amount.toLocaleString()}`;
+      else text = `${flag} ${name} bought ${coin.id}`;
+      const t = { id: Date.now()+Math.random(), text, icon:event.icon };
+      setToasts(p=>[t,...p].slice(0,3));
+      setTimeout(()=>setToasts(p=>p.filter(x=>x.id!==t.id)),4000);
+    };
+    fire();
+    const iv = setInterval(fire, 5000);
+    return ()=>clearInterval(iv);
+  }, []);
+
+  const submit = async() => {
+    setErr("");
+    if(!form.email||!form.password) return setErr("All fields required.");
+    if(mode==="register") {
+      if(!form.name) return setErr("Name required.");
+      if(form.password!==form.confirm) return setErr("Passwords don't match.");
+      if(form.password.length<6) return setErr("Password 6+ chars.");
+    }
+    setLoading(true);
+    try {
+      const endpoint = mode==="register" ? "/api/signup" : "/api/login";
+      const res = await fetch(`${API_URL}${endpoint}`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(mode==="register" ? {name:form.name,email:form.email,password:form.password} : {email:form.email,password:form.password})
+      });
+      const data = await res.json();
+      if(!res.ok) return setErr(data.error||"Error");
+      localStorage.setItem("afm_token", data.token);
+      onAuth(data.user);
+    } catch(e) {
+      setErr("Network error");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",flexDirection:"column"}}>
+      <div style={{background:"#040A15",borderBottom:`1px solid ${C.border}`,padding:"0 16px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg,${C.accent},#0057FF)`,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:14,color:"#fff"}}>AF</div>
+          <div><div style={{fontWeight:800,fontSize:13,letterSpacing:-0.3}}><span style={{color:C.accent}}>Automated</span><span style={{color:C.text}}> Financial</span></div><div style={{fontSize:8,color:C.muted,letterSpacing:1,textTransform:"uppercase"}}>Marketing</div></div>
+        </div>
+        <Clock/>
+      </div>
+      <Ticker cryptos={CRYPTOS}/>
+      <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 20px"}}>
+        <div style={{textAlign:"center",marginBottom:32,maxWidth:520}}>
+          <div style={{fontSize:11,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:10,fontWeight:700}}>Institutional-Grade Crypto Platform</div>
+          <h1 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,marginBottom:8}}>Grow Your Future</h1>
+          <h2 style={{margin:0,fontSize:42,fontWeight:900,lineHeight:1.1,letterSpacing:-0.5,background:`linear-gradient(135deg,${C.accent},${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Through Technology</h2>
+          <p style={{margin:0,color:C.subtext,fontSize:14}}>Trade crypto assets with confidence</p>
+        </div>
+        <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:360}}>
+        <div style={{display:"flex",background:"#040A15",borderRadius:10,padding:4,marginBottom:20}}>
+            {["login","register"].map(m=>(
+              <button key={m} onClick={()=>{setMode(m);setErr("");}} style={{flex:1,padding:"9px 0",borderRadius:7,border:"none",cursor:"pointer",fontSize:13,fontWeight:700,background:mode===m?C.accent:"transparent",color:mode===m?"#000":C.muted}}>
+                {m==="login"?"Sign In":"Create Account"}
+              </button>
+            ))}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {mode==="register"&&<input placeholder="Full name" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
+            <input placeholder="Email address" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+            <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>
+            {mode==="register"&&<input placeholder="Confirm password" type="password" value={form.confirm} onChange={e=>setForm(f=>({...f,confirm:e.target.value}))} style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:8,color:C.text,padding:"12px 14px",fontSize:14,outline:"none",boxSizing:"border-box"}}/>}
+            {err&&<div style={{color:C.red,fontSize:12,background:"#2A0A0A",padding:"8px 12px",borderRadius:7}}>{err}</div>}
+            <button onClick={submit} disabled={loading} style={{background:C.accent,color:"#000",border:"none",borderRadius:10,padding:"12px 0",fontWeight:800,fontSize:14,cursor:"pointer",opacity:loading?0.6:1}}>
+              {loading?"Please wait...":mode==="login"?"Sign In →":"Create Account →"}
+            </button>
+          </div>
+        </div>
+      </div>
+      <ToastStack toasts={toasts}/>
+    </div>
+  );
+      }
+  function TradeModal({ crypto, user, onClose, onTrade, token }) {
+  const [side, setSide] = useState("buy");
+  const [amount, setAmount] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const usd = parseFloat(amount) || 0;
+  const qty = usd / crypto.price;
+  const holding = user.portfolio.find(p => p.id === crypto.id);
+  
+  const exec = async() => {
+    setMsg("");
+    if(!usd || usd<=0) return setMsg("Enter valid amount.");
+    if(side==="buy" && usd>user.balance) return setMsg("Insufficient balance.");
+    if(side==="sell" && (!holding || holding.qty*crypto.price<usd)) return setMsg("Insufficient holdings.");
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/trade`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json", "Authorization":`Bearer ${token}`},
+        body: JSON.stringify({side, coinId: crypto.id, coinName: crypto.name, quantity: qty, price: crypto.price})
+      });
+      const data = await res.json();
+      if(!res.ok) return setMsg(data.error||"Trade failed");
+      
+      onTrade(side, crypto, usd, qty);
+      setMsg(side==="buy" ? `✓ Bought ${qty.toFixed(6)} ${crypto.id}` : `✓ Sold ${qty.toFixed(6)} ${crypto.id}`);
+      setAmount("");
+    } catch(e) {
+      setMsg("Network error");
+    }
+    setLoading(false);
+  };
+  
+  return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:999}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:18,padding:28,width:"100%",maxWidth:340}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -304,7 +481,7 @@ function LoginPage({ onAuth }) {
       <ToastStack toasts={toasts}/>
     </div>
   );
-}function Dashboard({ user, setUser, token, onLogout }) {
+      }function Dashboard({ user, setUser, token, onLogout }) {
   const [tab, setTab] = useState("market");
   const [prices, setPrices] = useState(CRYPTOS);
   const [charts, setCharts] = useState(()=>{const d={}; CRYPTOS.forEach(c=>{d[c.id]=genChart(c.price);}); return d;});
@@ -491,10 +668,29 @@ function LoginPage({ onAuth }) {
         )}
         {tab==="messages"&&(
           <div style={{padding:14}}>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💬 Messages</div>
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",textAlign:"center",color:C.muted}}>
-              <div style={{fontSize:12}}>Messages feature coming soon!</div>
-              <div style={{fontSize:11,marginTop:8}}>Send and receive messages from other users</div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:12}}>💬 Support</div>
+            <div style={{fontWeight:700,fontSize:12,color:C.muted,marginBottom:10}}>What would you like help with?</div>
+            {[
+              {icon:"💳", label:"Withdrawal", desc:"Help with withdrawals"},
+              {icon:"💰", label:"Deposit", desc:"Help with deposits"},
+              {icon:"🎯", label:"Contact Support", desc:"General support"},
+              {icon:"📋", label:"Make a Complaint", desc:"Report an issue"}
+            ].map((option,i)=>(
+              <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:10,cursor:"pointer",display:"flex",gap:12,alignItems:"center"}} onClick={()=>{
+                const subject = `Support Request: ${option.label}`;
+                const body = `Hello,\n\nI need help with: ${option.label}\n\nDetails:\n[Please describe your issue here]\n\nThank you`;
+                window.location.href = `mailto:cryptotrading5@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+              }}>
+                <div style={{fontSize:24}}>{option.icon}</div>
+                <div>
+                  <div style={{fontWeight:700,fontSize:13,color:C.text}}>{option.label}</div>
+                  <div style={{fontSize:11,color:C.muted}}>{option.desc}</div>
+                </div>
+                <span style={{marginLeft:"auto",color:C.accent,fontSize:18}}>›</span>
+              </div>
+            ))}
+            <div style={{background:"#0A1628",border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px",marginTop:16,fontSize:11,color:C.muted,textAlign:"center"}}>
+              We'll respond to your email within 24 hours
             </div>
           </div>
         )}
@@ -534,7 +730,7 @@ function LoginPage({ onAuth }) {
       <div style={{position:"fixed",bottom:0,left:0,right:0,background:"#040A15",borderTop:`1px solid ${C.border}`,display:"flex"}}>
         {navBtn("market","Market","📈")}
         {navBtn("portfolio","Portfolio","💼")}
-        {navBtn("history","History","📋")}
+        {navBtn("messages","Messages","💬")}
         {navBtn("account","Account","👤")}
       </div>
       <ToastStack toasts={toasts}/>
@@ -576,9 +772,7 @@ function LoginPage({ onAuth }) {
       )}
     </div>
   );
-}
-
-function AdminPage() {
+                }function AdminPage() {
   const [pwd,setPwd]=useState("");
   const [token,setToken]=useState(()=>sessionStorage.getItem("afm_admin_token")||"");
   const [users,setUsers]=useState([]);
@@ -626,7 +820,9 @@ function AdminPage() {
     } catch(e) {
       setAddErr("Network error");
     }
-  };if(!token) {
+  };
+
+  if(!token) {
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Inter',system-ui,sans-serif",color:C.text,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px"}}>
         <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:40,width:"100%",maxWidth:420}}>
@@ -692,9 +888,7 @@ function AdminPage() {
       </div>
     </div>
   );
-}
-
-export default function App() {
+        }export default function App() {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [token, setToken] = useState(null);
@@ -727,4 +921,5 @@ export default function App() {
   if(!user) return <LoginPage onAuth={(u)=>{setUser(u);const t=localStorage.getItem("afm_token");setToken(t);}}/>;
 
   return <Dashboard user={user} setUser={setUser} token={token} onLogout={()=>{localStorage.removeItem("afm_token");setUser(null);setToken(null);}} />;
-                       }
+}
+            
